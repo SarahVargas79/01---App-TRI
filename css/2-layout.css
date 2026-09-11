@@ -1,0 +1,118 @@
+/* ══════════════════════════════════════════════════════════════════════
+   CAMADA 2 — LAYOUT / CHROME
+   Página do protótipo (painel Escopo), moldura do celular e chrome do app
+   (statusbar, appbars, navbar, menu lateral, modal). Nada de tela específica.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── Painel lateral de anotações (para envio ao desenvolvimento) ───────── */
+.page-head{position:fixed;top:0;left:0;right:0;background:#fff;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;padding:10px 24px;z-index:50}
+.page-head h1{font-size:14px;font-weight:700;color:var(--primary)}
+.page-head label{font-size:12px;color:var(--text-secondary);display:flex;align-items:center;gap:6px;cursor:pointer}
+.wrap{display:flex;gap:40px;margin-top:48px;align-items:flex-start}
+
+.notes{width:340px;display:flex;flex-direction:column;gap:12px;position:sticky;top:80px;
+  max-height:calc(100vh - 110px);overflow-y:auto}
+.notes h2{font-size:13px;letter-spacing:.5px;color:var(--primary);text-transform:uppercase}
+.note{background:#fff;border:1px solid var(--border);border-left:4px solid var(--primary-light);
+  border-radius:10px;padding:12px 14px;font-size:12px;line-height:1.5;color:var(--text-secondary)}
+.note b{color:var(--text-primary)}
+.note .num{display:inline-flex;width:18px;height:18px;border-radius:50%;background:var(--primary-light);
+  color:#fff;font-size:11px;font-weight:700;align-items:center;justify-content:center;margin-right:6px}
+.note.obs{border-left-color:var(--amber)}
+.note.novo{border-left-color:#4CA500}
+.note .mod-cor{display:inline-block;width:13px;height:13px;border-radius:50%;
+  margin-right:8px;vertical-align:middle}
+.note .mod-regra{font-size:11px;color:var(--text-light);margin-top:5px}
+body.clean .notes{display:none}
+
+/* marcadores de alteração/demonstração sobre a tela */
+.flag{position:absolute;top:-7px;right:10px;background:var(--primary-light);color:#fff;
+  font-size:8px;font-weight:700;letter-spacing:.5px;padding:2px 7px;border-radius:8px;z-index:5}
+.flag.verde{background:#4CA500}
+.novo-item{outline-color:#4CA500}
+body.clean .flag{display:none}
+body.clean{outline:none}
+body.clean .demo-control{display:none}
+
+/* ── Moldura do telefone (390x844 — iPhone 14 Pro, base do design system) ── */
+.phone{
+  width:412px;background:#1F2430;border-radius:48px;padding:11px;
+  box-shadow:0 24px 60px rgba(31,36,48,.35);flex-shrink:0;
+}
+/* tamanho fixo de celular — conteúdo rola por dentro */
+.screen{background:var(--bg-page);border-radius:38px;overflow:hidden;width:390px;height:844px;
+  position:relative;display:flex;flex-direction:column}
+
+.statusbar{height:34px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;font-size:12px;font-weight:700;color:var(--text-primary)}
+
+/* ── AppBar da Home ────────────────────────────────────────────────────── */
+.appbar{height:var(--appbar-h);flex-shrink:0;display:flex;align-items:center;gap:12px;
+  padding:0 var(--pad-screen);background:var(--bg-page)}
+.appbar img.logo{height:34px}
+.appbar .spacer{flex:1}
+.bell{width:22px;height:22px;color:var(--text-primary)}
+.who{text-align:right;line-height:1.15}
+.who .hi{font-family:'Roboto',sans-serif;font-size:12.4px;color:var(--text-secondary)}
+.who .name{font-family:'Roboto',sans-serif;font-size:20.4px;font-weight:700;color:var(--text-primary)}
+.avatar{width:var(--avatar);height:var(--avatar);border-radius:50%;background:var(--primary);
+  color:#fff;font-family:'Roboto',sans-serif;font-size:23.9px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;cursor:pointer}
+
+/* ── AppBar do fluxo (voltar + título central + início) ───────────────── */
+.appbar-flow{height:var(--appbar-h);flex-shrink:0;display:none;align-items:center;gap:10px;
+  padding:0 var(--pad-screen);background:var(--bg-page)}
+.appbar-flow .icone-btn{width:36px;height:36px;border-radius:50%;border:1px solid var(--border);
+  background:var(--bg-card);color:var(--primary);font-size:18px;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;flex-shrink:0}
+.appbar-flow .icone-btn svg{width:18px;height:18px}
+.appbar-flow .titulo-fluxo{flex:1;text-align:center;font-size:16px;font-weight:700;color:var(--primary)}
+
+.content{padding:4px var(--pad-screen) 16px;display:flex;flex-direction:column;
+  flex:1;min-height:0;overflow-y:auto;scrollbar-width:none}
+.content::-webkit-scrollbar{display:none}
+
+/* ── Views (navegação entre telas) ────────────────────────────────────── */
+.view{display:none;animation:fadeIn .18s ease-in-out}
+.view.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.fluxo{padding-bottom:8px}
+
+/* ── NavBar ────────────────────────────────────────────────────────────── */
+.navbar{height:var(--navbar-h);flex-shrink:0;background:#fff;border-top:1px solid var(--border);
+  display:flex;align-items:stretch}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;font-size:10px;color:var(--text-light);position:relative}
+.nav-item svg{width:22px;height:22px}
+.nav-item.active{color:var(--primary);font-weight:700}
+.nav-item.active::after{content:'';width:5px;height:5px;border-radius:50%;
+  background:var(--primary);position:absolute;bottom:5px}
+
+/* ── Menu lateral (réplica do app atual — ancorado à direita) ──────────── */
+.menu-fundo{display:none;position:absolute;inset:0;background:rgba(31,36,48,.42);z-index:45}
+.menu-fundo.ativo{display:block}
+.menu-lateral{position:absolute;top:0;right:0;bottom:0;width:80%;background:#FAFAFC;
+  box-shadow:-10px 0 28px rgba(31,36,48,.22);padding:14px 0;overflow-y:auto;
+  animation:deslizaMenu .2s ease-out;scrollbar-width:none}
+.menu-lateral::-webkit-scrollbar{display:none}
+@keyframes deslizaMenu{from{transform:translateX(48px);opacity:0}to{transform:translateX(0);opacity:1}}
+.menu-item{display:flex;align-items:center;gap:14px;width:100%;padding:15px 20px;
+  border:none;background:none;font-family:'Inter',sans-serif;font-size:13.5px;
+  color:var(--text-primary);cursor:pointer;text-align:left;border-bottom:1px solid var(--border)}
+.menu-item:last-child{border-bottom:none}
+.menu-item svg{width:21px;height:21px;flex-shrink:0;color:var(--text-primary)}
+.menu-item:active{background:var(--surface-light)}
+.menu-item.sair{color:#E0473C}
+.menu-item.sair svg{color:#E0473C}
+
+/* ── Modal ─────────────────────────────────────────────────────────────── */
+.modal-fundo{display:none;position:absolute;inset:0;background:rgba(31,36,48,.5);z-index:40;
+  padding:24px;align-items:center;justify-content:center}
+.modal-fundo.ativo{display:flex}
+.modal{background:#fff;border-radius:var(--radius-card);padding:20px;width:100%;
+  box-shadow:0 18px 45px rgba(0,0,0,.28)}
+.modal h3{font-size:16px;font-weight:700;color:var(--primary);margin-bottom:6px}
+.modal p{font-size:12px;line-height:1.5;color:var(--text-secondary);margin-bottom:8px}
+.modal .btn-row{margin-top:8px}
+.modal .btn-row .btn{flex:1}

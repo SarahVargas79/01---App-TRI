@@ -1,0 +1,28 @@
+/* ══════════════════════════════════════════════════════════════════════
+   CAMADA 1 — TOKENS (design system TRI v1.1.0, extraídos de design_system.json)
+   Nunca usar cor/medida fora destes tokens. Fonte única de estilo da marca.
+   ══════════════════════════════════════════════════════════════════════ */
+:root{
+  --primary:#273285;        --primary-light:#0563E8;
+  --sky-blue:#00AFEF;       --sky-blue-light:#4CCFFF;
+  --orange:#F5802C;         --amber:#FAA831;
+  --pink:#CB58A0;           --green-bright:#84F000;
+  --bg-page:#F5F5F5;        --bg-card: #ffffff;
+  --surface-light:#F1F5FE;  --border:#E4E8F2;
+  --text-primary:#373435;   --text-secondary:#56525E;
+  --text-light:#97999B;     --white:#FFFFFF;
+
+  --radius-card:16px;  --radius-banner:16px;  --radius-tip:12px;
+  --pad-screen:16px;   --pad-card:16px;       --pad-banner:20px;
+  --gap-banner:12px;   --gap-card:8px;
+  --appbar-h:64px;     --navbar-h:64px;
+  --avatar:44px;       --icon-tile:52px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'Inter',sans-serif;
+  background:#E9EBF1;
+  color:var(--text-primary);
+  display:flex;justify-content:center;align-items:flex-start;
+  gap:40px;padding:32px 24px 64px;
+}

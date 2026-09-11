@@ -1,0 +1,3013 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APP TRI — Protótipo Navegável · Home v1.1 + Benefício Escolar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Roboto:wght@400;700&family=Open+Sans+Condensed:wght@700&display=swap" rel="stylesheet">
+<style>
+  /* ══════════════════════════════════════════════════════════════════════
+     TOKENS — extraídos de design_system.json (TRI Design System v1.1.0)
+     Nunca usar cor/medida fora destes tokens.
+     ══════════════════════════════════════════════════════════════════════ */
+  :root{
+    --primary:#273285;        --primary-light:#0563E8;
+    --sky-blue:#00AFEF;       --sky-blue-light:#4CCFFF;
+    --orange:#F5802C;         --amber:#FAA831;
+    --pink:#CB58A0;           --green-bright:#84F000;
+    --bg-page:#F5F5F5;        --bg-card: #ffffff;
+    --surface-light:#F1F5FE;  --border:#E4E8F2;
+    --text-primary:#373435;   --text-secondary:#56525E;
+    --text-light:#97999B;     --white:#FFFFFF;
+
+    --radius-card:16px;  --radius-banner:16px;  --radius-tip:12px;
+    --pad-screen:16px;   --pad-card:16px;       --pad-banner:20px;
+    --gap-banner:12px;   --gap-card:8px;
+    --appbar-h:64px;     --navbar-h:64px;
+    --avatar:44px;       --icon-tile:52px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:'Inter',sans-serif;
+    background:#E9EBF1;
+    color:var(--text-primary);
+    display:flex;justify-content:center;align-items:flex-start;
+    gap:40px;padding:32px 24px 64px;
+  }
+
+  /* ── Painel lateral de anotações (para envio ao desenvolvimento) ───────── */
+  .page-head{position:fixed;top:0;left:0;right:0;background:#fff;border-bottom:1px solid var(--border);
+    display:flex;align-items:center;justify-content:space-between;padding:10px 24px;z-index:50}
+  .page-head h1{font-size:14px;font-weight:700;color:var(--primary)}
+  .page-head label{font-size:12px;color:var(--text-secondary);display:flex;align-items:center;gap:6px;cursor:pointer}
+  .wrap{display:flex;gap:40px;margin-top:48px;align-items:flex-start}
+
+  .notes{width:340px;display:flex;flex-direction:column;gap:12px;position:sticky;top:80px;
+    max-height:calc(100vh - 110px);overflow-y:auto}
+  .notes h2{font-size:13px;letter-spacing:.5px;color:var(--primary);text-transform:uppercase}
+  .note{background:#fff;border:1px solid var(--border);border-left:4px solid var(--primary-light);
+    border-radius:10px;padding:12px 14px;font-size:12px;line-height:1.5;color:var(--text-secondary)}
+  .note b{color:var(--text-primary)}
+  .note .num{display:inline-flex;width:18px;height:18px;border-radius:50%;background:var(--primary-light);
+    color:#fff;font-size:11px;font-weight:700;align-items:center;justify-content:center;margin-right:6px}
+  .note.obs{border-left-color:var(--amber)}
+  .note.novo{border-left-color:#4CA500}
+  .note .mod-cor{display:inline-block;width:13px;height:13px;border-radius:50%;
+    margin-right:8px;vertical-align:middle}
+  .note .mod-regra{font-size:11px;color:var(--text-light);margin-top:5px}
+  body.clean .notes{display:none}
+
+  /* marcador de alteração sobre a tela */
+  .flag{position:absolute;top:-7px;right:10px;background:var(--primary-light);color:#fff;
+    font-size:8px;font-weight:700;letter-spacing:.5px;padding:2px 7px;border-radius:8px;z-index:5}
+  .flag.verde{background:#4CA500}
+  {outline:2px dashed var(--primary-light);outline-offset:2px;position:relative}
+  .novo-item{outline-color:#4CA500}
+  body.clean .flag{display:none}
+  body.clean {outline:none}
+  body.clean .demo-control{display:none}
+
+  /* ── Moldura do telefone (390x844 — iPhone 14 Pro, base do design system) ── */
+  .phone{
+    width:412px;background:#1F2430;border-radius:48px;padding:11px;
+    box-shadow:0 24px 60px rgba(31,36,48,.35);flex-shrink:0;
+  }
+  /* tamanho fixo de celular — conteúdo rola por dentro */
+  .screen{background:var(--bg-page);border-radius:38px;overflow:hidden;width:390px;height:844px;
+    position:relative;display:flex;flex-direction:column}
+
+  .statusbar{height:34px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
+    padding:0 24px;font-size:12px;font-weight:700;color:var(--text-primary)}
+
+  /* ── AppBar da Home ────────────────────────────────────────────────────── */
+  .appbar{height:var(--appbar-h);flex-shrink:0;display:flex;align-items:center;gap:12px;
+    padding:0 var(--pad-screen);background:var(--bg-page)}
+  .appbar img.logo{height:34px}
+  .appbar .spacer{flex:1}
+  .bell{width:22px;height:22px;color:var(--text-primary)}
+  .who{text-align:right;line-height:1.15}
+  .who .hi{font-family:'Roboto',sans-serif;font-size:12.4px;color:var(--text-secondary)}
+  .who .name{font-family:'Roboto',sans-serif;font-size:20.4px;font-weight:700;color:var(--text-primary)}
+  .avatar{width:var(--avatar);height:var(--avatar);border-radius:50%;background:var(--primary);
+    color:#fff;font-family:'Roboto',sans-serif;font-size:23.9px;font-weight:700;
+    display:flex;align-items:center;justify-content:center}
+
+  /* ── AppBar do fluxo (voltar + título central + início) ───────────────── */
+  .appbar-flow{height:var(--appbar-h);flex-shrink:0;display:none;align-items:center;gap:10px;
+    padding:0 var(--pad-screen);background:var(--bg-page)}
+  .appbar-flow .icone-btn{width:36px;height:36px;border-radius:50%;border:1px solid var(--border);
+    background:var(--bg-card);color:var(--primary);font-size:18px;font-weight:700;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;flex-shrink:0}
+  .appbar-flow .icone-btn svg{width:18px;height:18px}
+  .appbar-flow .titulo-fluxo{flex:1;text-align:center;font-size:16px;font-weight:700;color:var(--primary)}
+
+  .content{padding:4px var(--pad-screen) 16px;display:flex;flex-direction:column;
+    flex:1;min-height:0;overflow-y:auto;scrollbar-width:none}
+  .content::-webkit-scrollbar{display:none}
+
+  /* ── Views (navegação entre telas) ────────────────────────────────────── */
+  .view{display:none;animation:fadeIn .18s ease-in-out}
+  .view.active{display:block}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ── Banner Cartão ─────────────────────────────────────────────────────── */
+  .banner-cartao{
+    height:150px;border-radius:var(--radius-banner);position:relative;overflow:hidden;
+    background:linear-gradient(140deg,#E9F7FE 0%,#BEE8FC 55%,var(--sky-blue-light) 140%);
+    padding:var(--pad-banner);flex-shrink:0;
+  }
+  .banner-cartao h3{font-size:19px;font-weight:700;line-height:1.25;color:var(--text-primary);max-width:205px}
+  .banner-cartao img{position:absolute;right:-22px;bottom:-6px;height:124px}
+  .cta{display:inline-flex;align-items:center;gap:7px;border:none;cursor:pointer;
+    font-family:'Inter',sans-serif;font-size:11.5px;color:#fff;
+    border-radius:24px;padding:8px 14px;margin-top:12px}
+  .cta .arr{display:inline-flex;width:15px;height:15px;border-radius:50%;background:rgba(255,255,255,.28);
+    align-items:center;justify-content:center;font-size:9px}
+  .cta-amber{background:var(--amber)}
+
+  /* ── Banner GPS ────────────────────────────────────────────────────────── */
+  .banner-gps{
+    height:100px;border-radius:var(--radius-banner);position:relative;overflow:hidden;
+    background:var(--orange);padding:var(--pad-banner);margin-top:var(--gap-banner);flex-shrink:0;
+  }
+  .banner-gps h3{font-size:16px;font-weight:700;line-height:1.3;color:#fff;max-width:200px}
+  .banner-gps .gps-label{font-family:'Open Sans Condensed','Arial Narrow',sans-serif;
+    font-size:27px;font-weight:700;color:#fff;margin-top:2px}
+  .banner-gps img{position:absolute;right:-8px;bottom:0;height:100px}
+  .cta-glass{background:rgba(0,0,0,.15);border:1px solid rgba(255,255,255,.4)}
+
+  /* ── Ações rápidas ─────────────────────────────────────────────────────── */
+  .section-title{font-size:15px;font-weight:700;letter-spacing:.5px;color:var(--text-primary);
+    text-transform:uppercase;margin:24px 0 12px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap-card)}
+  .card{background:var(--bg-card);border-radius:var(--radius-card);border:none;text-align:left;
+    font-family:'Inter',sans-serif;cursor:pointer;
+    box-shadow:0 1px 4px rgba(0,0,0,.07);padding:14px 12px 16px;
+    transition:transform .12s ease}
+  .card:active{transform:scale(.97)}
+  .card img{width:var(--icon-tile);height:var(--icon-tile);border-radius:14px;display:block}
+  .card .label{font-size:16px;font-weight:700;margin-top:10px;color:var(--text-primary)}
+  .card .desc{font-size:11.5px;line-height:1.3;color:var(--text-secondary);margin-top:4px}
+
+  /* ── Barra de Dica ─────────────────────────────────────────────────────── */
+  .tip{background:var(--surface-light);border-radius:var(--radius-tip);padding:16px;
+    display:flex;gap:12px;margin-top:24px}
+  .tip .ico{width:36px;height:36px;border-radius:10px;background:var(--primary);flex-shrink:0;
+    display:flex;align-items:center;justify-content:center}
+  .tip .ico svg{width:20px;height:20px;color:#fff}
+  .tip h4{font-size:18px;font-weight:700;color:var(--primary);margin-bottom:4px}
+  .tip p{font-size:11.5px;line-height:1.4;color:var(--text-primary)}
+  .tip .hl{font-weight:700;color:var(--primary-light)}
+  .footnote{font-size:8.6px;line-height:1.4;color:var(--text-light);margin-top:8px;padding:0 2px}
+
+  /* ── NavBar ────────────────────────────────────────────────────────────── */
+  .navbar{height:var(--navbar-h);flex-shrink:0;background:#fff;border-top:1px solid var(--border);
+    display:flex;align-items:stretch}
+  .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:3px;font-size:10px;color:var(--text-light);position:relative}
+  .nav-item svg{width:22px;height:22px}
+  .nav-item.active{color:var(--primary);font-weight:700}
+  .nav-item.active::after{content:'';width:5px;height:5px;border-radius:50%;
+    background:var(--primary);position:absolute;bottom:5px}
+
+  /* ══════════════════════════════════════════════════════════════════════
+     FLUXO BENEFÍCIO ESCOLAR — réplica do fluxo do app atual
+     (telas 1–7 + acompanhamento) no design system TRI 2026
+     ══════════════════════════════════════════════════════════════════════ */
+  .fluxo{padding-bottom:8px}
+  .titulo-pagina{font-size:19px;font-weight:700;line-height:1.25;color:var(--primary);margin:8px 0 2px}
+  .etapa-label{font-size:11.5px;color:var(--text-secondary);margin-bottom:10px}
+  .subtitulo{font-size:11.5px;line-height:1.4;color:var(--text-secondary);margin:0 0 14px}
+
+  .stepper{display:flex;gap:6px;margin:4px 0 16px}
+  .step{height:6px;border-radius:999px;flex:1;background:var(--border)}
+  .step.done{background:var(--primary)}
+  .step.active{background:var(--primary-light)}
+
+  .aviso{border-radius:var(--radius-tip);padding:12px 14px;font-size:11.5px;line-height:1.45;
+    margin-bottom:14px;background:var(--surface-light);color:var(--text-primary)}
+  .aviso b{color:var(--primary)}
+  .aviso.atencao{background:#FEF3E2;color:#7A4A0E;border-left:4px solid var(--amber)}
+  .aviso.atencao b{color:#7A4A0E}
+  .aviso.sucesso{background:#EFFBE2;color:#33610A}
+
+  /* seleção de perfil (réplica da tela "Solicitar Cartão" do app atual) */
+  .cartao-perfil{width:100%;background:var(--bg-card);border:1px solid var(--border);
+    border-radius:var(--radius-card);padding:14px;margin-bottom:10px;cursor:pointer;
+    display:flex;align-items:center;gap:12px;font-family:'Inter',sans-serif;text-align:left;
+    box-shadow:0 1px 4px rgba(0,0,0,.06);position:relative;transition:transform .12s ease}
+  .cartao-perfil:active{transform:scale(.985)}
+  .cartao-perfil .perfil-ico{width:52px;height:52px;border-radius:14px;display:flex;
+    align-items:center;justify-content:center;font-size:24px;flex-shrink:0;color:#fff}
+  .cartao-perfil .txt{flex:1}
+  .cartao-perfil .txt strong{display:block;font-size:15px;font-weight:700;color:var(--text-primary);
+    text-transform:uppercase;margin-bottom:3px}
+  .cartao-perfil .txt span{display:block;font-size:11.5px;line-height:1.35;color:var(--text-secondary)}
+  .cartao-perfil .seta{color:var(--primary-light);font-size:22px;font-weight:700}
+  .cartao-perfil.indisponivel{opacity:.5;filter:grayscale(.35)}
+  .badge-breve{position:absolute;right:12px;top:-8px;background:var(--amber);color:#fff;
+    border-radius:999px;padding:3px 9px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+
+  /* entrada Escolar */
+  .card-escolar{width:230px;margin:14px auto 18px;background:linear-gradient(160deg,#FDFEFF,#EDF3FA);
+    border-radius:14px;padding:14px 14px 12px;box-shadow:0 10px 22px rgba(31,36,48,.16);position:relative}
+  .card-escolar .topo{display:flex;justify-content:space-between;align-items:flex-start}
+  .card-escolar img.logo{height:22px}
+  .card-escolar .foto{width:52px;height:60px;border-radius:8px;background:#D8DEE9;border:3px solid var(--amber);
+    display:flex;align-items:center;justify-content:center;font-size:26px}
+  .card-escolar .rota{position:absolute;left:14px;top:48px;bottom:34px;width:3px;border-radius:2px;
+    background:var(--pink)}
+  .card-escolar .rota::before,.card-escolar .rota::after{content:'';position:absolute;left:-3px;width:9px;height:9px;
+    border-radius:50%;border:2px solid var(--pink);background:#fff}
+  .card-escolar .rota::before{top:-8px}
+  .card-escolar .rota::after{bottom:-8px}
+  .card-escolar .nome-cartao{margin:26px 0 2px 16px;font-size:13px;font-weight:700;color:var(--pink)}
+  .card-escolar .tipo{margin-left:16px;font-size:9px;color:var(--text-secondary)}
+
+  .cta-escolar{width:100%;border:none;border-radius:var(--radius-card);background:var(--pink);color:#fff;
+    padding:18px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;
+    font-family:'Inter',sans-serif;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;
+    text-align:left;margin-bottom:10px;transition:transform .12s ease}
+  .cta-escolar:active{transform:scale(.985)}
+  .cta-escolar .ico-cta{font-size:28px}
+  .btn-contorno{width:100%;border:1px solid var(--primary-light);border-radius:var(--radius-card);
+    background:var(--bg-card);color:var(--primary-light);padding:14px;cursor:pointer;
+    font-family:'Inter',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+
+  /* informações */
+  .titulo-secao{font-size:13px;font-weight:700;color:var(--text-primary);margin:8px 0 4px}
+  .titulo-info{font-size:19px;font-weight:700;line-height:1.3;color:var(--text-primary);margin:4px 0 12px}
+  .lista-info{padding-left:16px;margin-bottom:14px}
+  .lista-info li{font-size:11.5px;line-height:1.5;color:var(--text-primary);margin-bottom:8px}
+  .lista-info b{color:var(--primary)}
+  .sites{font-size:11.5px;line-height:1.8;margin-bottom:14px;word-break:break-word}
+  .sites a{color:var(--primary-light);font-weight:700;text-decoration:none}
+
+  /* foto (etapa 1) */
+  .foto-circulo{width:215px;height:215px;border-radius:50%;background:#E4E8F2;margin:12px auto 6px;
+    display:flex;align-items:center;justify-content:center;position:relative;font-size:84px;color:#B9C0CF;
+    border:4px solid #fff;box-shadow:0 8px 20px rgba(31,36,48,.12)}
+  .foto-circulo.capturada{box-shadow:0 0 0 3px #4CA500,0 8px 20px rgba(31,36,48,.12)}
+  .foto-circulo .fab{position:absolute;right:4px;bottom:14px;width:46px;height:46px;border-radius:50%;
+    background:#fff;border:2px solid var(--primary-light);font-size:20px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center}
+  .badge-foto{display:none;position:absolute;left:50%;transform:translateX(-50%);bottom:-6px;
+    background:#4CA500;color:#fff;border-radius:999px;padding:5px 11px;font-size:9px;font-weight:700;white-space:nowrap}
+  .foto-circulo.capturada .badge-foto{display:block}
+
+  /* formulário (etapa 2) */
+  .dado-box{background:#ECEEF3;border-radius:12px;padding:13px 14px;font-size:12px;line-height:1.8;
+    color:var(--text-primary);margin-bottom:6px}
+  .dado-box b{font-weight:700}
+  .link-acao{background:none;border:none;color:var(--primary-light);font-weight:700;font-size:12px;
+    cursor:pointer;padding:6px 0 12px;font-family:'Inter',sans-serif;display:block;text-align:left}
+  .campo{margin-bottom:12px}
+  .campo label{display:block;font-size:11px;font-weight:700;color:var(--text-primary);margin-bottom:6px}
+  .campo label .req{color:var(--pink)}
+  .campo input,.campo select{width:100%;border:1px solid var(--border);border-radius:12px;padding:11px 12px;
+    font-size:13px;font-family:'Inter',sans-serif;background:var(--bg-card);color:var(--text-primary)}
+  .campo input[readonly]{background:#ECEEF3;border-color:#ECEEF3;color:var(--text-secondary)}
+  .radio-grupo{display:flex;flex-direction:column;gap:9px;padding:2px 0 4px}
+  .radio-grupo.linha{flex-direction:row;gap:22px}
+  .radio-grupo label{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:400;color:var(--text-primary)}
+  .radio-grupo input{accent-color:var(--primary-light);width:18px;height:18px}
+
+  .upload{margin-bottom:14px}
+  .upload .rotulo{font-size:11px;font-weight:700;color:var(--text-primary)}
+  .upload .rotulo .req{color:var(--pink)}
+  .upload .dica-doc{font-size:10px;color:var(--text-light);margin:2px 0 7px}
+  .upload-row{display:flex;gap:8px}
+  .upload-box{flex:1;border:1px solid var(--border);background:#ECEEF3;border-radius:12px;padding:11px 12px;
+    font-size:12.5px;color:var(--text-secondary);display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .upload-box .lixeira{cursor:pointer;opacity:.55}
+  .upload-box.anexado{border-color:#4CA500;background:#EFFBE2;color:#33610A;font-weight:700}
+  .btn-quadrado{width:46px;border:1px solid var(--primary-light);background:var(--bg-card);border-radius:12px;
+    color:var(--primary-light);font-size:18px;cursor:pointer;flex-shrink:0}
+
+  /* local de entrega (etapa 3) */
+  .local-opcao{width:100%;background:var(--primary-light);color:#fff;border:none;border-radius:12px;
+    padding:13px 14px;margin-bottom:10px;cursor:pointer;font-family:'Inter',sans-serif;text-align:center;
+    transition:transform .12s ease}
+  .local-opcao:active{transform:scale(.985)}
+  .local-opcao strong{display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+  .local-opcao small{display:block;font-size:10px;margin-top:3px;opacity:.95;text-transform:uppercase}
+  .prazo-entrega{text-align:center;margin-top:18px}
+  .prazo-entrega b{display:block;font-size:16px;font-weight:700;color:var(--text-primary);margin-bottom:6px}
+  .prazo-entrega span{font-size:12px;color:var(--text-secondary)}
+
+  /* revisão (etapa 4) */
+  .rotulo-central{text-align:center;font-size:13px;font-weight:700;color:var(--text-primary);margin:14px 0 8px}
+  .local-card{width:100%;background:var(--primary-light);color:#fff;border:none;border-radius:12px;
+    padding:13px 14px;text-align:center;font-family:'Inter',sans-serif}
+  .local-card strong{display:block;font-size:11px;font-weight:700;text-transform:uppercase}
+  .local-card span{display:block;font-size:11px;margin-top:4px;text-transform:uppercase;line-height:1.4}
+
+  /* sucesso (etapa 5) */
+  .fib-intro{text-align:center;font-size:13px;color:var(--text-primary);margin:18px 0 8px}
+  .fib{text-align:center;font-size:32px;font-weight:700;color:var(--text-primary);margin-bottom:18px}
+  .texto-corrido{font-size:12px;line-height:1.6;color:var(--text-primary);text-align:justify;margin-bottom:16px}
+  .texto-corrido b{font-weight:700}
+
+  /* situação do benefício */
+  .chips-demo{display:flex;gap:6px;margin:4px 0 12px;flex-wrap:wrap}
+  .chip{font-size:10px;padding:5px 10px;border-radius:999px;border:1px solid var(--border);
+    background:#fff;color:var(--text-secondary);cursor:pointer;font-family:'Inter',sans-serif;font-weight:700}
+  .chip.ativo{background:var(--primary);color:#fff;border-color:var(--primary)}
+  .badge-situacao{display:block;width:max-content;margin:14px auto 10px;padding:11px 22px;border-radius:12px;
+    font-size:14px;font-weight:700;letter-spacing:.5px}
+  .badge-analise{background:#CDE9FB;color:#15406B}
+  .badge-aprovado{background:#58D177;color:#fff}
+  .linha-central{text-align:center;font-size:11px;color:var(--text-light);margin-bottom:10px}
+  .dado-central{text-align:center;font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:6px}
+
+  .icone-sucesso{width:84px;height:84px;border-radius:50%;background:#EFFBE2;color:#4CA500;
+    display:flex;align-items:center;justify-content:center;font-size:42px;font-weight:700;margin:18px auto}
+
+  /* ── Fluxo TRI Idoso (documento RG/CNH + biometria com liveness) ────────── */
+  .opcao-doc{width:100%;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-tip);
+    padding:13px 14px;margin-bottom:8px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;
+    font-family:'Inter',sans-serif;font-size:13px;font-weight:700;color:var(--text-primary)}
+  .opcao-doc.selecionada{border-color:var(--primary-light);background:var(--surface-light);color:var(--primary)}
+  .opcao-doc .check{color:var(--primary-light);font-weight:700}
+
+  .camera{height:220px;border-radius:20px;border:2px dashed var(--primary-light);
+    background:linear-gradient(135deg,var(--surface-light),#fff);
+    display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;
+    margin:14px 0;position:relative;overflow:hidden}
+  .camera.selfie-circulo{border-radius:50%;width:220px;height:220px;margin-left:auto;margin-right:auto}
+  .camera .cam-ico{font-size:44px}
+  .camera .cam-txt{color:var(--text-secondary);text-align:center;font-size:11.5px;max-width:210px;line-height:1.4}
+  .linha-scan{position:absolute;left:22px;right:22px;height:3px;background:rgba(76,165,0,.85);top:30%;
+    box-shadow:0 0 14px rgba(76,165,0,.8);animation:scan 2s infinite ease-in-out;display:none}
+  .camera.capturada .linha-scan{display:block}
+  @keyframes scan{0%,100%{transform:translateY(0)}50%{transform:translateY(105px)}}
+  .badge-captura{display:none;position:absolute;right:14px;bottom:14px;background:#4CA500;color:#fff;
+    border-radius:999px;padding:6px 11px;font-size:10px;font-weight:700}
+  .camera.capturada .badge-captura{display:block}
+  .camera.selfie-circulo .badge-captura{right:auto;left:50%;transform:translateX(-50%);bottom:18px}
+
+  .lista-liveness{list-style:none;margin:14px 0 4px}
+  .lista-liveness li{display:flex;align-items:center;gap:10px;padding:8px 0;
+    font-size:12.5px;font-weight:700;color:var(--text-secondary)}
+  .lista-liveness .liv-check{display:inline-flex;width:20px;height:20px;border-radius:50%;flex-shrink:0;
+    border:2px solid var(--border);align-items:center;justify-content:center;font-size:11px;color:transparent}
+  .lista-liveness li.ativo{color:var(--primary)}
+  .lista-liveness li.ativo .liv-check{border-color:var(--primary-light)}
+  .lista-liveness li.feito{color:var(--text-primary)}
+  .lista-liveness li.feito .liv-check{border-color:#4CA500;background:#4CA500;color:#fff}
+
+  /* botões */
+  .btn{width:100%;border:none;border-radius:var(--radius-card);padding:14px;cursor:pointer;
+    font-family:'Inter',sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;
+    letter-spacing:.3px;margin-top:6px;transition:transform .12s ease,opacity .12s ease}
+  .btn:active{transform:scale(.985)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn.primario{background:var(--primary);color:#fff}
+  .btn.azul{background:var(--primary-light);color:#fff}
+  .btn.texto{background:transparent;color:var(--primary-light);text-transform:uppercase;font-size:12px;padding:14px 10px}
+  .btn-row{display:flex;gap:10px;align-items:center;margin-top:10px}
+  .btn-row .btn{margin-top:0}
+  .btn-row .texto{width:auto;flex:0 0 auto}
+  .btn-row .primario,.btn-row .azul{flex:1}
+  .oculto{display:none !important}
+
+  .etiqueta{display:inline-block;padding:4px 9px;border-radius:999px;background:var(--surface-light);
+    color:var(--primary-light);font-size:9px;font-weight:700;text-transform:uppercase;
+    letter-spacing:.4px;margin:8px 0 2px}
+
+  /* ── Módulo Recarga (réplica do app atual; 1ª tela com cartões de tipo) ── */
+  .titulo-grande{font-size:21px;font-weight:700;line-height:1.3;color:var(--text-primary);margin:14px 0 22px}
+  .cartao-mini{width:240px;height:96px;display:block;margin:0 auto 14px;border:none;border-radius:14px;
+    padding:12px 16px;cursor:pointer;position:relative;text-align:left;font-family:'Inter',sans-serif;
+    box-shadow:0 8px 18px rgba(31,36,48,.18);transition:transform .12s ease;color:#fff}
+  .cartao-mini:active{transform:scale(.97)}
+  .cartao-mini .chip-mini{display:block;width:30px;height:22px;border-radius:5px;
+    background:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.6)}
+  .cartao-mini .marca{position:absolute;top:12px;right:16px;font-size:15px;font-weight:700;
+    font-style:italic;opacity:.9}
+  .cartao-mini .nome{position:absolute;left:16px;bottom:12px;font-size:14px;font-weight:700;
+    text-transform:uppercase;letter-spacing:.3px}
+  .mini-antecipada{background:linear-gradient(135deg,var(--amber),var(--orange))}
+  .mini-vale{background:linear-gradient(135deg,var(--primary-light),var(--primary))}
+  .mini-escolar{background:linear-gradient(135deg,var(--pink),#8E3C73)}
+
+  .info-produto{background:var(--surface-light);border-radius:12px;padding:14px;
+    text-align:center;margin-bottom:18px}
+  .info-produto .prod{font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:7px}
+  .info-produto .linha{font-size:12.5px;color:var(--text-primary);margin-bottom:5px}
+  .info-produto .mini{font-size:11px;color:var(--text-secondary);margin-bottom:2px}
+  .btn-valor{display:block;width:100%;border:none;border-radius:12px;background:var(--primary-light);
+    color:#fff;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;padding:16px;
+    margin-bottom:12px;cursor:pointer;transition:transform .12s ease}
+  .btn-valor:active{transform:scale(.985)}
+  .input-valor{display:flex;align-items:center;gap:8px;border:2px solid var(--primary-light);
+    border-radius:14px;padding:6px 6px 6px 14px;background:var(--bg-card);margin-top:4px}
+  .input-valor input{flex:1;border:none;outline:none;font-family:'Inter',sans-serif;
+    font-size:14px;color:var(--text-primary);background:transparent;min-width:0}
+  .input-valor .ir{width:38px;height:38px;border-radius:50%;border:none;background:#ECEEF3;
+    color:var(--text-secondary);font-size:17px;font-weight:700;cursor:pointer;flex-shrink:0}
+
+  /* ── Módulo QR Codes TRI (lista) + compra de passagem avulsa ───────────── */
+  .qr-comprar{display:flex;align-items:center;gap:12px;width:100%;border:1px solid var(--border);
+    background:var(--bg-card);border-radius:14px;padding:12px 14px;margin-bottom:14px;cursor:pointer;
+    font-family:'Inter',sans-serif;text-align:left;box-shadow:0 1px 4px rgba(0,0,0,.06);
+    transition:transform .12s ease}
+  .qr-comprar:active{transform:scale(.985)}
+  .qr-comprar .ico-qr{width:46px;height:46px;border:2px solid var(--text-primary);border-radius:10px;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--text-primary)}
+  .qr-comprar .ico-qr svg{width:28px;height:28px}
+  .qr-comprar .txt{flex:1}
+  .qr-comprar .txt strong{display:block;font-size:13.5px;font-weight:700;color:var(--text-primary);line-height:1.25}
+  .qr-comprar .txt span{font-size:11px;color:var(--text-secondary)}
+  .qr-comprar .mais{font-size:24px;color:var(--primary-light);font-weight:700}
+
+  .badge-online{display:block;width:max-content;margin:2px auto 16px;background:var(--primary-light);
+    color:#fff;font-size:11.5px;font-weight:700;border-radius:14px;padding:7px 16px}
+
+  .qr-tabs{display:flex;gap:8px;margin-bottom:14px}
+  .qr-tab{flex:1;border:none;background:#ECEEF3;color:var(--text-secondary);border-radius:10px;
+    padding:9px;font-family:'Inter',sans-serif;font-size:12px;font-weight:700;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:3px}
+  .qr-tab svg{width:20px;height:20px}
+  .qr-tab.ativa{background:var(--primary);color:#fff}
+
+  .qr-card{display:flex;gap:12px;align-items:center;background:#E3F0E5;border-radius:14px;padding:14px;
+    margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  .qr-card .dados{flex:1;font-size:11.5px;line-height:1.5;color:var(--text-primary)}
+  .qr-card .dados .rotulo{color:var(--text-secondary)}
+  .qr-card .dados .destaque{font-weight:700;margin-bottom:2px}
+  .qr-card .dados .ref{font-size:10.5px;font-weight:700;color:var(--text-primary);margin-top:5px}
+  .qr-card .qr-mini{width:84px;height:84px;background:#fff;border-radius:10px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;transition:filter .15s ease}
+  .qr-card.protegido .qr-mini{filter:blur(6px)}
+
+  .btn-lock{position:absolute;right:16px;bottom:16px;width:50px;height:50px;border-radius:14px;
+    border:none;background:#4CA500;color:#fff;display:none;align-items:center;justify-content:center;
+    cursor:pointer;box-shadow:0 8px 18px rgba(76,165,0,.4);z-index:20}
+  .btn-lock svg{width:22px;height:22px}
+
+  /* opção ilustrada (Como você irá viajar? / tipo de passagem) */
+  .opcao-ilustrada{display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;
+    border:none;background:none;cursor:pointer;font-family:'Inter',sans-serif;margin:26px 0;
+    transition:transform .12s ease}
+  .opcao-ilustrada:active{transform:scale(.985)}
+  .opcao-ilustrada .legenda-ilustrada{font-size:15px;color:var(--text-primary);text-align:center;line-height:1.35}
+  .opcao-ilustrada .ico-qr-grande{width:96px;height:96px;border:5px solid var(--text-primary);
+    border-radius:18px;display:flex;align-items:center;justify-content:center;color:var(--text-primary)}
+  .opcao-ilustrada .ico-qr-grande svg{width:58px;height:58px}
+  .opcao-ilustrada .bus-art svg{width:180px;height:auto}
+
+  /* numpad (quantidade de passagens avulsas) */
+  .num-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:6px 0 12px}
+  .num-btn{border:1px solid var(--border);background:var(--bg-card);border-radius:12px;
+    padding:15px 0;font-family:'Inter',sans-serif;font-size:17px;font-weight:700;
+    color:var(--text-primary);cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .num-btn.dez{grid-column:2;background:#ECEEF3;color:var(--text-secondary)}
+  .num-btn.sel{background:var(--primary);border-color:var(--primary);color:#fff}
+  .resumo-laranja{background:var(--amber);color:#fff;border-radius:12px;padding:12px;
+    text-align:center;font-size:12.5px;line-height:1.5;margin-bottom:12px}
+  .resumo-laranja b{font-size:13px}
+
+  /* ── Módulo Pedidos (lista com abas + detalhe) ─────────────────────────── */
+  .pedidos-tabs{display:flex;gap:8px;margin-bottom:14px}
+  .ped-tab{flex:1;border:none;background:#ECEEF3;color:var(--text-secondary);border-radius:10px;
+    padding:9px 4px;font-family:'Inter',sans-serif;font-size:11px;font-weight:700;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:3px}
+  .ped-tab svg{width:18px;height:18px}
+  .ped-tab.ativa{background:var(--primary);color:#fff}
+
+  .pedido-card{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;
+    padding:18px 16px;margin-bottom:14px;box-shadow:0 1px 5px rgba(0,0,0,.07);text-align:center}
+  .pedido-card .num{font-size:22px;color:var(--text-primary);margin-bottom:8px}
+  .pedido-card .produto{font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:10px}
+  .pedido-card .data{font-size:12.5px;color:var(--text-primary);margin-bottom:10px}
+  .pedido-badge{display:inline-block;border-radius:999px;padding:5px 14px;font-size:12px;
+    font-weight:700;color:#fff;margin-bottom:14px}
+  .pedido-badge.aberto{background:var(--primary-light)}
+  .pedido-badge.pago{background:#3FB54A}
+  .pedido-badge.excluido{background:#E0473C}
+  .btn-detalhe{width:100%;border:none;border-radius:12px;background:var(--primary-light);color:#fff;
+    font-family:'Inter',sans-serif;font-size:14px;font-weight:700;text-transform:uppercase;
+    letter-spacing:.5px;padding:15px;cursor:pointer;transition:transform .12s ease}
+  .btn-detalhe:active{transform:scale(.985)}
+  .pedidos-vazio{text-align:center;font-size:12px;color:var(--text-light);padding:30px 0}
+
+  .detalhe-card{border-radius:16px;overflow:hidden;box-shadow:0 8px 22px rgba(31,36,48,.16);margin-top:6px}
+  .detalhe-topo{background:linear-gradient(135deg,#3D7FD0,#2A5DA8);color:#fff;text-align:center;
+    padding:18px 16px;border-bottom:3px solid var(--primary)}
+  .detalhe-topo .pnum{font-size:21px;font-weight:700}
+  .detalhe-topo .pprod{font-size:14px;font-weight:700;margin-top:4px}
+  .detalhe-corpo{background:#EDEFF2;padding:18px 16px}
+  .detalhe-linha{display:flex;align-items:flex-start;gap:12px;font-size:13.5px;color:var(--text-primary);
+    margin-bottom:13px;line-height:1.35}
+  .detalhe-linha svg{width:20px;height:20px;flex-shrink:0;color:var(--primary-light);margin-top:1px}
+  .detalhe-linha.titulo{font-weight:700;margin-top:4px}
+  .detalhe-acoes{display:flex;gap:10px;margin-top:6px}
+  .detalhe-acoes .btn{margin-top:0;flex:1;padding:15px 10px}
+  .btn.aguarde{background:#B9B6F0;color:#fff;cursor:not-allowed}
+  .nota-loja{text-align:center;font-size:12px;color:var(--text-secondary);line-height:1.5;
+    margin-top:18px;background:var(--surface-light);padding:12px;border-radius:10px}
+
+  /* ── Módulo Cartões (Meus cartões + detalhe) ───────────────────────────── */
+  .escolha-titulo{text-align:center;font-size:16px;font-weight:700;color:var(--text-primary);margin:6px 0 16px}
+  .cartao-item{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:16px;
+    margin-bottom:16px;box-shadow:0 1px 5px rgba(0,0,0,.07);cursor:pointer;text-align:center;
+    transition:transform .12s ease}
+  .cartao-item:active{transform:scale(.99)}
+  .cartao-visual{width:215px;height:128px;border-radius:12px;margin:0 auto 12px;position:relative;
+    overflow:hidden;box-shadow:0 6px 16px rgba(31,36,48,.2)}
+  .cartao-visual.azul{background:linear-gradient(135deg,#2E8BD0 0%,#0B3F86 100%)}
+  .cartao-visual.escolar{background:linear-gradient(135deg,#C9509D 0%,#7C2A5E 100%)}
+  .cartao-visual .logo-c{position:absolute;top:11px;left:13px;font-family:'Inter',sans-serif;
+    font-weight:700;font-size:16px;color:#fff;line-height:1;display:flex;align-items:flex-start;gap:4px}
+  .cartao-visual .logo-c small{font-size:6.5px;font-weight:700;opacity:.9;line-height:1.05}
+  .cartao-visual .legenda-c{position:absolute;left:13px;bottom:11px;font-size:9px;font-weight:700;
+    color:#fff;opacity:.92;text-transform:uppercase;letter-spacing:.3px}
+  .cartao-visual .foto-aluno{position:absolute;right:12px;top:14px;width:46px;height:56px;border-radius:6px;
+    background:#EADDE7;display:flex;align-items:center;justify-content:center;font-size:26px;border:2px solid #fff}
+  .cartao-visual .rota-c{position:absolute;left:13px;top:34px;bottom:30px;width:3px;border-radius:2px;
+    background:rgba(255,255,255,.7)}
+  .cartao-visual .rota-c::before,.cartao-visual .rota-c::after{content:'';position:absolute;left:-3px;
+    width:8px;height:8px;border-radius:50%;border:2px solid #fff;background:transparent}
+  .cartao-visual .rota-c::before{top:-7px}
+  .cartao-visual .rota-c::after{bottom:-7px}
+
+  .cartao-badge{display:block;width:max-content;margin:4px auto 12px;border-radius:999px;padding:7px 28px;
+    font-size:13px;font-weight:700;color:#fff;letter-spacing:.3px}
+  .cartao-badge.ativo{background:#3FB54A}
+
+  .cartao-badge.cancelado {
+    background: #E0473C
+  }
+  .cartao-num{text-align:center;font-size:17px;font-weight:700;color:var(--text-primary);margin-bottom:6px}
+  .cartao-num .lbl{font-weight:400}
+  .cartao-tipos{text-align:center;font-size:11.5px;color:var(--text-secondary);line-height:1.4}
+  .cartao-item .cartao-tipos{margin-bottom:0}
+  #view-cartaoDetalhe .cartao-tipos{margin-bottom:20px}
+
+  .btn-acao-cartao{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;
+    border:none;border-radius:14px;padding:16px;cursor:pointer;font-family:'Inter',sans-serif;
+    font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:#fff;text-align:left;
+    margin-bottom:12px;transition:transform .12s ease}
+  .btn-acao-cartao:active{transform:scale(.985)}
+  .btn-acao-cartao svg{width:30px;height:30px;flex-shrink:0;opacity:.95}
+  .btn-acao-cartao.amarelo{background:var(--amber)}
+  .btn-acao-cartao.vermelho{background:#E0473C}
+
+  /* ── Fluxo de cancelamento de cartão ───────────────────────────────────── */
+  .cancel-subtitulo{text-align:center;font-size:14px;font-weight:700;color:var(--text-primary);margin:6px 0 18px}
+  .motivo-btn{width:100%;border:none;border-radius:12px;background:var(--primary-light);color:#fff;
+    font-family:'Inter',sans-serif;font-size:13px;font-weight:700;padding:15px;margin-bottom:12px;
+    cursor:pointer;transition:transform .12s ease}
+  .motivo-btn:active{transform:scale(.985);filter:brightness(.96)}
+  .cancel-sucesso-txt{text-align:center;font-size:14px;font-weight:700;color:var(--text-primary);
+    line-height:1.4;margin:4px 0 12px}
+  .cancel-protocolo{text-align:center;font-size:12px;line-height:1.5;color:var(--text-secondary);margin-bottom:20px}
+  .cancel-protocolo b{color:var(--text-primary)}
+
+  /* ── Módulo Extrato (Saldo + Últimos usos) ─────────────────────────────── */
+  .saldo-card{border-radius:16px;padding:18px;margin:6px 0 20px;color:#fff;
+    background:linear-gradient(135deg,#0563E8 0%,#273285 100%);box-shadow:0 8px 20px rgba(39,50,133,.25)}
+  .saldo-card .cartao-ref{font-size:12px;opacity:.92;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+  .saldo-card .cartao-ref svg{width:18px;height:18px}
+  .saldo-card .saldo-label{font-size:12px;opacity:.9}
+  .saldo-card .saldo-valor{font-size:34px;font-weight:700;line-height:1.1;margin:2px 0 14px}
+  .saldo-breakdown{display:flex;gap:10px}
+  .saldo-breakdown .item{flex:1;background:rgba(255,255,255,.14);border-radius:10px;padding:10px 12px}
+  .saldo-breakdown .item .t{font-size:10px;opacity:.9;text-transform:uppercase;letter-spacing:.3px}
+  .saldo-breakdown .item .v{font-size:15px;font-weight:700;margin-top:3px}
+  .saldo-atualizado{font-size:10px;opacity:.8;margin-top:12px;text-align:right}
+
+  .extrato-secao{font-size:15px;font-weight:700;letter-spacing:.5px;color:var(--text-primary);
+    text-transform:uppercase;margin:0 0 12px}
+  .uso-item{display:flex;align-items:center;gap:12px;background:var(--bg-card);border:1px solid var(--border);
+    border-radius:14px;padding:13px 14px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+  .uso-ico{width:40px;height:40px;border-radius:11px;background:var(--surface-light);flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;color:var(--primary)}
+  .uso-ico svg{width:22px;height:22px}
+  .uso-ico.credito{background:#EAF7EC;color:#3FB54A}
+  .uso-info{flex:1;min-width:0}
+  .uso-linha{font-size:13px;font-weight:700;color:var(--text-primary);line-height:1.25}
+  .uso-meta{font-size:11px;color:var(--text-secondary);margin-top:3px}
+  .uso-valor{font-size:14px;font-weight:700;color:var(--text-primary);white-space:nowrap}
+  .uso-valor.credito{color:#3FB54A}
+
+  /* ── Tela Login (fundo azul da marca) ──────────────────────────────────── */
+  #view-login{flex:1}
+  #view-login.active{display:flex;flex-direction:column;background:var(--primary);
+    margin:-4px -16px -16px;padding:22px 22px 16px}
+  .login-form{flex:1;display:flex;flex-direction:column}
+  .login-logo{display:flex;justify-content:center;align-items:center;margin:10px 0 6px;width:100%}
+  .login-logo img{height:90px;width:auto;display:block}
+  .login-titulo{text-align:center;font-size:18px;font-weight:700;color:#fff;margin-bottom:24px}
+  .login-campo{margin-bottom:16px}
+  .login-campo label{display:block;font-size:12px;font-weight:700;letter-spacing:.4px;
+    color:var(--amber);text-transform:uppercase;margin-bottom:7px}
+  .login-campo input{width:100%;border:none;border-radius:12px;padding:15px 14px;
+    font-size:14px;font-family:'Inter',sans-serif;background:#ECEEF3;color:var(--text-primary)}
+  .input-senha{display:flex;align-items:center;border:none;border-radius:12px;
+    background:#ECEEF3;padding-right:6px}
+  .input-senha input{flex:1;border:none;outline:none;background:transparent;padding:15px 14px;
+    font-size:14px;font-family:'Inter',sans-serif;color:var(--text-primary);min-width:0}
+  .input-senha button{border:none;background:none;cursor:pointer;padding:6px;color:var(--text-light);display:flex}
+  .login-esqueci{text-align:right;margin:-4px 0 20px}
+  .login-esqueci a{font-size:13px;font-weight:700;color:#fff;text-decoration:none;cursor:pointer}
+  #view-login .btn.primario{background:var(--amber);color:#fff}
+  #view-login .btn.contorno{background:transparent;border:1.5px solid var(--amber);color:var(--amber)}
+  .banner-gps.promo{margin-top:18px;margin-bottom:0}
+
+  /* ── Tela Notificações ─────────────────────────────────────────────────── */
+  .notif-card{background:#F3F1F8;border-radius:14px;padding:16px 18px;margin-bottom:14px}
+  .notif-card h4{font-size:17px;font-weight:700;color:var(--text-primary);margin-bottom:8px}
+  .notif-card p{font-size:13px;line-height:1.5;color:var(--text-primary);margin-bottom:12px}
+  .notif-card .data{font-size:12px;font-weight:700;color:var(--text-primary)}
+
+  /* ── Tela Solicitar Cartão (botão sim/tri) ─────────────────────────────── */
+  .btn-solicitar-cartao{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;
+    border:none;border-radius:14px;background:linear-gradient(90deg,#FAA831,#F5802C);padding:18px 20px;
+    cursor:pointer;font-family:'Inter',sans-serif;box-shadow:0 6px 16px rgba(245,128,44,.28);
+    margin-top:10px;transition:transform .12s ease}
+  .btn-solicitar-cartao:active{transform:scale(.985)}
+  .btn-solicitar-cartao .txt{font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--primary)}
+  .btn-solicitar-cartao .logos{display:flex;align-items:center;gap:9px}
+  .btn-solicitar-cartao .logos span{font-size:18px;font-weight:700;font-style:italic;color:#fff;line-height:1}
+
+  /* ── Tela Perfil ───────────────────────────────────────────────────────── */
+  .perfil-topo{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#0563E8,#273285);
+    color:#fff;border-radius:16px;padding:18px;margin:6px 0 18px;box-shadow:0 8px 20px rgba(39,50,133,.25)}
+  .perfil-avatar{width:62px;height:62px;border-radius:50%;background:rgba(255,255,255,.18);
+    border:2px solid rgba(255,255,255,.5);color:#fff;font-family:'Roboto',sans-serif;font-size:24px;
+    font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .perfil-id .nome{font-size:18px;font-weight:700}
+  .perfil-id .dado{font-size:12px;opacity:.92;margin-top:3px}
+  .perfil-secao{font-size:12px;font-weight:700;letter-spacing:.5px;color:var(--text-light);
+    text-transform:uppercase;margin:6px 4px 8px}
+  .perfil-opcao{display:flex;align-items:center;gap:14px;width:100%;background:var(--bg-card);
+    border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px;cursor:pointer;
+    font-family:'Inter',sans-serif;text-align:left;box-shadow:0 1px 3px rgba(0,0,0,.05);transition:transform .12s ease}
+  .perfil-opcao:active{transform:scale(.99)}
+  .perfil-opcao .ico{width:38px;height:38px;border-radius:11px;background:var(--surface-light);flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;color:var(--primary)}
+  .perfil-opcao .ico svg{width:20px;height:20px}
+  .perfil-opcao .txt{flex:1;min-width:0}
+  .perfil-opcao .txt strong{display:block;font-size:14px;font-weight:700;color:var(--text-primary)}
+  .perfil-opcao .txt span{display:block;font-size:11.5px;color:var(--text-secondary);margin-top:1px}
+  .perfil-opcao .seta{color:var(--text-light);font-size:20px;font-weight:700}
+  .btn-sair-perfil{width:100%;border:1.5px solid #E0473C;background:var(--bg-card);color:#E0473C;
+    border-radius:14px;padding:14px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;
+    text-transform:uppercase;letter-spacing:.3px;cursor:pointer;margin-top:6px}
+  .btn-sair-perfil:active{transform:scale(.99)}
+  .perfil-versao{text-align:center;font-size:10.5px;color:var(--text-light);margin-top:14px}
+
+  /* formas de pagamento (PIX, Cartão de Crédito, Boleto) */
+  .metodo-pgto{display:flex;align-items:center;gap:12px;background:var(--bg-card);
+    border:1px solid var(--border);border-radius:14px;padding:13px 14px;margin-bottom:11px;
+    box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  .metodo-logo{width:46px;height:46px;border-radius:12px;background:var(--surface-light);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .metodo-logo svg{width:28px;height:28px}
+  .metodo-txt{flex:1;min-width:0}
+  .metodo-nome{font-size:13.5px;font-weight:700;color:var(--text-primary);margin-bottom:3px}
+  .metodo-valores{font-size:11px;line-height:1.45;color:var(--text-secondary)}
+  .metodo-valores b{color:var(--text-primary)}
+  .metodo-pgto .btn{width:auto;margin-top:0;padding:11px 18px;flex-shrink:0;font-size:12px}
+
+  .pix-logo{display:flex;align-items:center;justify-content:center;gap:10px;margin:18px 0 10px}
+  .pix-logo .letras{font-size:30px;color:#8A9099;letter-spacing:1px}
+  .pix-logo .letras small{display:block;font-size:7.5px;letter-spacing:.4px;text-align:right;margin-top:-3px}
+  .valor-central{text-align:center;font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:4px}
+  .nota-uso{text-align:center;font-size:12px;line-height:1.5;color:var(--text-secondary);margin-top:16px}
+  .btn-pagar{display:block;width:200px;margin:18px auto 0}
+
+  .qr-fake{display:flex;justify-content:center;margin:10px 0 14px}
+  .pill-expira{display:flex;align-items:center;gap:8px;justify-content:center;background:#FEF3E2;
+    border:1.5px solid var(--orange);border-radius:14px;padding:11px;font-size:12.5px;
+    font-weight:700;color:var(--text-primary);margin-bottom:12px}
+  .chave-box{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#ECEEF3;
+    border:1px solid var(--text-light);border-radius:12px;padding:11px 12px;font-size:12px;
+    color:var(--text-primary);margin:10px 0 16px;overflow:hidden;white-space:nowrap}
+  .chave-box span{overflow:hidden;text-overflow:ellipsis}
+  .opcoes-pix{font-size:12px;line-height:1.5;color:var(--text-primary)}
+  .opcoes-pix .tit{font-weight:700;margin-bottom:8px}
+  .opcoes-pix p{display:flex;gap:8px;margin-bottom:8px}
+  .divisor-ou{display:flex;align-items:center;gap:12px;color:var(--text-secondary);
+    font-size:12px;font-weight:700;margin:10px 0}
+  .divisor-ou::before,.divisor-ou::after{content:'';flex:1;height:1px;background:var(--border)}
+
+  /* ── Menu lateral (réplica do app atual — ancorado à direita) ──────────── */
+  .menu-fundo{display:none;position:absolute;inset:0;background:rgba(31,36,48,.42);z-index:45}
+  .menu-fundo.ativo{display:block}
+  .menu-lateral{position:absolute;top:0;right:0;bottom:0;width:80%;background:#FAFAFC;
+    box-shadow:-10px 0 28px rgba(31,36,48,.22);padding:14px 0;overflow-y:auto;
+    animation:deslizaMenu .2s ease-out;scrollbar-width:none}
+  .menu-lateral::-webkit-scrollbar{display:none}
+  @keyframes deslizaMenu{from{transform:translateX(48px);opacity:0}to{transform:translateX(0);opacity:1}}
+  .menu-item{display:flex;align-items:center;gap:14px;width:100%;padding:15px 20px;
+    border:none;background:none;font-family:'Inter',sans-serif;font-size:13.5px;
+    color:var(--text-primary);cursor:pointer;text-align:left;border-bottom:1px solid var(--border)}
+  .menu-item:last-child{border-bottom:none}
+  .menu-item svg{width:21px;height:21px;flex-shrink:0;color:var(--text-primary)}
+  .menu-item:active{background:var(--surface-light)}
+  .menu-item.sair{color:#E0473C}
+  .menu-item.sair svg{color:#E0473C}
+  .avatar{cursor:pointer}
+
+  /* ── Modal ─────────────────────────────────────────────────────────────── */
+  .modal-fundo{display:none;position:absolute;inset:0;background:rgba(31,36,48,.5);z-index:40;
+    padding:24px;align-items:center;justify-content:center}
+  .modal-fundo.ativo{display:flex}
+  .modal{background:#fff;border-radius:var(--radius-card);padding:20px;width:100%;
+    box-shadow:0 18px 45px rgba(0,0,0,.28)}
+  .modal h3{font-size:16px;font-weight:700;color:var(--primary);margin-bottom:6px}
+  .modal p{font-size:12px;line-height:1.5;color:var(--text-secondary);margin-bottom:8px}
+  .modal .btn-row{margin-top:8px}
+  .modal .btn-row .btn{flex:1}
+  .btn.secundario{background:var(--bg-card);border:1px solid var(--primary-light);color:var(--primary-light)}
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>APP TRI · Protótipo Navegável — Home v1.1 + Benefício Escolar &nbsp;<span style="font-weight:400;color:#97999B">Junho 2026</span></h1>
+  <label><input type="checkbox" id="toggle" checked> Escopo</label>
+</div>
+
+<div class="wrap">
+
+  <!-- ════════════════ TELA ════════════════ -->
+  <div class="phone"><div class="screen" id="telaApp">
+
+    <div class="statusbar">
+      <span>9:41</span>
+      <span style="display:flex;gap:5px;align-items:center">
+        <svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="4.5" width="3" height="6.5" rx="1"/><rect x="9" y="2" width="3" height="9" rx="1"/><rect x="13" y="0" width="3" height="11" rx="1" opacity=".35"/></svg>
+        <svg width="22" height="11" viewBox="0 0 24 12" fill="none"><rect x=".5" y=".5" width="20" height="11" rx="3" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="14" height="8" rx="1.5" fill="currentColor"/><path d="M22.5 4v4c1-.3 1.5-1 1.5-2s-.5-1.7-1.5-2z" fill="currentColor" opacity=".4"/></svg>
+      </span>
+    </div>
+
+    <!-- AppBar da Home -->
+    <div class="appbar" id="appbarHome">
+      <img class="logo" src="./assets/icons/logo_tri.svg" alt="TRI">
+      <div class="spacer"></div>
+      <svg class="bell" style="cursor:pointer" onclick="abrirNotificacoes()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+      <div class="who"><div class="hi">Bom dia,</div><div class="name">Giovana</div></div>
+      <div class="avatar" onclick="abrirMenu()" role="button" aria-label="Abrir menu">GD</div>
+    </div>
+
+    <!-- AppBar do fluxo: voltar + título central + início (réplica do app atual) -->
+    <div class="appbar-flow" id="appbarFluxo">
+      <button class="icone-btn" onclick="voltar()" aria-label="Voltar">‹</button>
+      <div class="titulo-fluxo" id="tituloFluxo">Escolar</div>
+      <button class="icone-btn" onclick="reiniciarPrototipo()" aria-label="Início">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>
+      </button>
+    </div>
+
+    <div class="content">
+
+      <!-- ═══════════ VIEW: LOGIN (entrada do app) ═══════════ -->
+      <div class="view active" id="view-login">
+        <!-- ícone TRI no topo -->
+   
+
+             <!-- campos centralizados -->
+        
+            
+        <div class="login-form">
+              <div class="login-logo"><img src="./assets/icons/logo_tri.svg" alt="TRI Transporte Integrado"></div>   
+          <div class="login-titulo">Acesse sua conta</div>
+          
+          <div class="login-campo">
+            <label>CPF ou usuário</label>
+            <input id="loginUsuario" placeholder="Digite seu CPF" inputmode="numeric">
+          </div>
+
+          <div class="login-campo">
+            <label>Senha</label>
+            <div class="input-senha">
+              <input id="loginSenha" type="password" placeholder="Sua senha">
+              <button type="button" onclick="toggleSenha()" aria-label="Mostrar/ocultar senha">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="login-esqueci"><a onclick="modalForaEscopo('Recuperação de Senha')">Esqueci minha senha</a></div>
+
+          <button class="btn primario" onclick="entrar()">Entrar</button>
+          <button class="btn contorno" onclick="modalForaEscopo('Cadastro')">Cadastre-se</button>
+        </div>
+           <!-- propaganda Tri GPS acima dos campos -->
+        <div class="banner-gps promo">
+          <h3>Acompanhe seu ônibus em tempo real.</h3>
+          <div class="gps-label">TRI GPS</div>
+          <button class="cta cta-glass" onclick="modalForaEscopo('Tri GPS')">Acesse o Tri GPS <span class="arr">➜</span></button>
+          <img src="./assets/images/banner_gps.png" alt="Tri GPS">
+        </div>
+      </div>
+      
+      <!-- ═══════════ VIEW: HOME (v1.1) ═══════════ -->
+      <div class="view" id="view-home">
+
+        <div class="banner-cartao">
+          <h3>Você ainda não tem um cartão TRI?</h3>
+          <button class="cta cta-amber" onclick="solicitarCartao()">Solicite agora seu cartão <span class="arr">➜</span></button>
+          <img src="./assets/images/banner_cartao2.png" alt="Cartão TRI">
+        </div>
+
+        <div class="banner-gps">
+          <h3>Acompanhe seu ônibus em tempo real.</h3>
+          <div class="gps-label">TRI GPS</div>
+          <button class="cta cta-glass" onclick="modalForaEscopo('Tri GPS')">Acesse o Tri GPS <span class="arr">➜</span></button>
+          <img src="./assets/images/banner_gps.png" alt="Tri GPS">
+        </div>
+
+        <div class="section-title">Ações rápidas</div>
+        <div class="grid">
+
+          <button class="card" onclick="navegar('recargaTipo')">
+            <img src="./assets/icons/ic_recarga.png" alt="">
+            <div class="label">Recarga</div>
+            <div class="desc">Adicione créditos ao seu cartão.</div>
+          </button>
+
+          <button class="card" onclick="abrirQrCodes()">
+            <img src="./assets/icons/ic_qrcode.png" alt="">
+            <div class="label">QR Code</div>
+            <div class="desc">Compre e use QR Codes avulsos.</div>
+          </button>
+
+          <button class="card" onclick="abrirPedidos()">
+           
+            <img src="./assets/icons/ic_pedidos.png" alt="">
+            <div class="label">Pedidos</div>
+            <div class="desc">Acompanhe seus pedidos de recarga.</div>
+          </button>
+
+          <button class="card" onclick="abrirCartoes()">
+        
+            <img src="./assets/icons/ic_cartoes.png" alt="">
+            <div class="label">Cartões</div>
+            <div class="desc">Gerencie seus cartões, ativos ou cancelados.</div>
+          </button>
+
+          <button class="card" onclick="abrirExtrato()">
+            <img src="./assets/icons/ic_extrato.png" alt="">
+            <div class="label">Extrato</div>
+            <div class="desc">Consulte os últimos usos e o saldo do seu cartão.</div>
+          </button>
+
+          <button class="card novo-item" onclick="navegar('perfis')">
+       
+            <img src="./assets/icons/ic_beneficios.png" alt="">
+            <div class="label">Benefícios</div>
+            <div class="desc">Solicite o benefício escolar.</div>
+          </button>
+
+        </div>
+
+        <div class="tip">
+         
+          <div class="ico">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.4 1 2.3h6c0-.9.4-1.8 1-2.3A7 7 0 0 0 12 2z"/></svg>
+          </div>
+          <div>
+            <h4>Dica</h4>
+            <p>Fez uma recarga? Os créditos são carregados no validador pelo
+              <span class="hl">sinal 4G do coletivo</span> e podem levar
+              <span class="hl">cerca de 30 min</span> para ficar disponíveis após a
+              confirmação do pagamento.</p>
+          </div>
+        </div>
+        <div class="footnote">*O tempo pode variar conforme a disponibilidade de sinal no veículo.</div>
+
+      </div>
+
+      <!-- ═══════════ VIEW: RECARGA — TIPO (1ª tela, adaptada: cartões em vez do QRCode) ═══════════ -->
+      <div class="view fluxo" id="view-recargaTipo">
+        <h2 class="titulo-grande">Qual tipo de passagem deseja comprar?</h2>
+
+        <button class="cartao-mini mini-antecipada" onclick="selecionarRecarga('Passagem Antecipada')">
+          <span class="chip-mini" aria-hidden="true"></span>
+          <span class="marca" aria-hidden="true">tri</span>
+          <span class="nome">Passagem Antecipada</span>
+        </button>
+
+        <button class="cartao-mini mini-vale" onclick="selecionarRecarga('Vale Transporte')">
+          <span class="chip-mini" aria-hidden="true"></span>
+          <span class="marca" aria-hidden="true">tri</span>
+          <span class="nome">Vale Transporte</span>
+        </button>
+
+        <button class="cartao-mini mini-escolar" onclick="selecionarRecarga('Escolar')">
+          <span class="chip-mini" aria-hidden="true"></span>
+          <span class="marca" aria-hidden="true">tri</span>
+          <span class="nome">Escolar</span>
+        </button>
+      </div>
+
+      <!-- ═══════════ VIEW: RECARGA — VALOR ═══════════ -->
+      <div class="view fluxo" id="view-recargaValor">
+        <h2 class="titulo-grande">Qual o valor da recarga?</h2>
+
+        <div class="info-produto">
+          <div class="prod" id="produtoLabel">Produto P. A.</div>
+          <div class="linha">Cartão 98.04.02038765-6</div>
+          <div class="mini">Recarga mínima R$ 20,00</div>
+          <div class="mini">Recarga máxima R$ 1.440,00</div>
+        </div>
+
+        <button class="btn-valor" onclick="escolherValor(20)">R$ 20,00</button>
+        <button class="btn-valor" onclick="escolherValor(50)">R$ 50,00</button>
+        <button class="btn-valor" onclick="escolherValor(100)">R$ 100,00</button>
+
+        <div class="input-valor">
+          <input id="valorLivre" placeholder="R$ 0,00" inputmode="decimal" aria-label="Valor da recarga">
+          <button class="ir" onclick="confirmarValorLivre()" aria-label="Avançar">›</button>
+        </div>
+      </div>
+
+      <!-- ═══════════ VIEW: RECARGA — PAGAMENTO ═══════════ -->
+      <div class="view fluxo" id="view-recargaPagamento">
+        <h2 class="titulo-grande">Qual a forma de pagamento?</h2>
+
+        <div class="info-produto">
+          <div class="prod" id="produtoLabelPag">Produto P. A.</div>
+          <div class="linha">Cartão 98.04.02038765-6</div>
+          <div class="mini">Recarga mínima R$ 20,00</div>
+          <div class="mini">Recarga máxima R$ 1.440,00</div>
+        </div>
+
+        <!-- PIX -->
+        <div class="metodo-pgto">
+          <span class="metodo-logo" aria-hidden="true">
+            <svg viewBox="0 0 48 48"><g fill="#32BCAD"><rect x="14" y="14" width="20" height="20" rx="5" transform="rotate(45 24 24)"/></g><circle cx="39" cy="10" r="2.6" fill="#32BCAD"/></svg>
+          </span>
+          <div class="metodo-txt">
+            <div class="metodo-nome">PIX</div>
+            <div class="metodo-valores">Taxa <b>R$ 0,00</b><br>Valor Total <b id="totalPix">R$ 0,00</b></div>
+          </div>
+          <button class="btn azul" onclick="pagar('pix')">Pagar</button>
+        </div>
+
+        <!-- Cartão de Crédito -->
+        <div class="metodo-pgto">
+          <span class="metodo-logo" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 9.5h19"/><path d="M6 15h4"/></svg>
+          </span>
+          <div class="metodo-txt">
+            <div class="metodo-nome">Cartão de Crédito</div>
+            <div class="metodo-valores">Taxa <b>R$ 1,00</b><br>Valor Total <b id="totalCredito">R$ 0,00</b></div>
+          </div>
+          <button class="btn azul" onclick="pagar('credito')">Pagar</button>
+        </div>
+
+        <!-- Boleto -->
+        <div class="metodo-pgto">
+          <span class="metodo-logo" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.6" stroke-linecap="round"><path d="M4 5v14M7 5v14M10 5v14M13.5 5v14M17 5v14M20 5v14" opacity=".9"/></svg>
+          </span>
+          <div class="metodo-txt">
+            <div class="metodo-nome">Boleto</div>
+            <div class="metodo-valores">Taxa <b>R$ 2,50</b><br>Valor Total <b id="totalBoleto">R$ 0,00</b></div>
+          </div>
+          <button class="btn azul" onclick="pagar('boleto')">Pagar</button>
+        </div>
+
+        <p class="nota-uso">Recarga em 30 minutos nos ônibus de Porto Alegre (eventualmente o prazo pode variar) ao aproximar o cartão no validador do ônibus.</p>
+      </div>
+
+      <!-- ═══════════ VIEW: RECARGA — PEDIDO (PIX) ═══════════ -->
+      <div class="view fluxo" id="view-recargaPedido">
+        <div class="pix-logo" style="margin-top:6px">
+          <svg width="36" height="36" viewBox="0 0 48 48" aria-hidden="true"><g fill="#32BCAD"><rect x="13" y="13" width="22" height="22" rx="6" transform="rotate(45 24 24)"/></g><circle cx="40" cy="9" r="3" fill="#32BCAD"/></svg>
+          <div class="letras" style="font-size:24px">pix<small>powered by <b>Banco Central</b></small></div>
+        </div>
+
+        <div class="qr-fake" id="qrFake" aria-label="QR Code PIX (ilustrativo)"></div>
+
+        <div class="valor-central">Número do pedido: 27994157</div>
+        <div class="valor-central" style="font-size:17px;margin:4px 0 14px">Valor: <span id="valorPedido">R$ 0,00</span></div>
+
+        <div class="pill-expira">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          Expira em: 11/06/2026 12:03
+        </div>
+
+        <button class="btn azul" id="btnCopiarChave" onclick="copiarChave()">Copiar chave</button>
+
+        <div class="chave-box"><span>00020101021226850014br.gov.bcb.pix2563qrcode.tri...</span><b>›</b></div>
+
+        <div class="opcoes-pix">
+          <div class="tit">Você pode fazer uma das opções:</div>
+          <p>Copie e cole a chave PIX no campo "PIX copia e cola" no app do seu banco.</p>
+          <div class="divisor-ou">OU</div>
+          <p>Escaneie o Qr Code acima no app do seu banco.</p>
+        </div>
+
+        <button class="btn-contorno" style="margin-top:16px" onclick="retornarMenu()">← Retornar ao menu</button>
+      </div>
+
+      <!-- ═══════════ VIEW: QR CODES TRI (lista) ═══════════ -->
+      <div class="view fluxo" id="view-qrcodes">
+
+        <!-- botão de compra (acima do aviso "Exibindo dados on-line") -->
+        <button class="qr-comprar" onclick="navegar('qrViajar')">
+          <span class="ico-qr" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/></svg>
+          </span>
+          <span class="txt">
+            <strong>Passagem Avulsa QRCode</strong>
+            <span>Compre uma nova passagem avulsa.</span>
+          </span>
+          <span class="mais" aria-hidden="true">+</span>
+        </button>
+
+        <span class="badge-online">Exibindo dados on-line</span>
+
+        <div class="qr-tabs">
+          <button class="qr-tab ativa" id="qrTabDisp" onclick="mostrarTabQr('disponiveis')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/></svg>
+            Disponíveis
+          </button>
+          <button class="qr-tab" id="qrTabUtil" onclick="mostrarTabQr('utilizados')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><path d="m13.5 17 2 2 4-4"/></svg>
+            Utilizados
+          </button>
+        </div>
+
+        <!-- aba Disponíveis -->
+        <div id="qrListaDisp">
+          <div class="qr-card" id="qrCardDisp">
+            <div class="dados">
+              <div class="rotulo">Uso liberado em:</div>
+              <div class="destaque">10/03/2026 09:42</div>
+              <div class="ref">QRCODE Nº 22895357</div>
+              <div class="ref">PEDIDO Nº 26238426</div>
+            </div>
+            <div class="qr-mini" id="qrMiniDisp" aria-hidden="true"></div>
+          </div>
+        </div>
+
+        <!-- aba Utilizados -->
+        <div id="qrListaUtil" class="oculto">
+          <div class="qr-card">
+            <div class="dados">
+              <div class="rotulo">Uso liberado em:</div>
+              <div class="destaque">01/08/2025 17:57</div>
+              <div class="rotulo">Usado em:</div>
+              <div class="destaque">07/08/2025 18:26</div>
+              <div class="ref">QRCODE Nº 13836787</div>
+              <div class="ref">PEDIDO Nº 0</div>
+            </div>
+            <div class="qr-mini" id="qrMiniUtil" aria-hidden="true"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════ VIEW: COMO VOCÊ IRÁ VIAJAR? ═══════════ -->
+      <div class="view fluxo" id="view-qrViajar">
+        <h2 class="titulo-grande">Como você irá viajar?</h2>
+        <button class="opcao-ilustrada" onclick="navegar('qrTipo')">
+          <span class="bus-art" aria-hidden="true">
+            <svg viewBox="0 0 200 92" xmlns="http://www.w3.org/2000/svg">
+              <rect x="10" y="14" width="180" height="52" rx="14" fill="#C7CDD6"/>
+              <rect x="22" y="23" width="150" height="22" rx="6" fill="#A9DED6"/>
+              <line x1="60" y1="23" x2="60" y2="45" stroke="#C7CDD6" stroke-width="3"/>
+              <line x1="98" y1="23" x2="98" y2="45" stroke="#C7CDD6" stroke-width="3"/>
+              <line x1="136" y1="23" x2="136" y2="45" stroke="#C7CDD6" stroke-width="3"/>
+              <rect x="14" y="52" width="172" height="6" fill="#9AA1AD"/>
+              <rect x="180" y="26" width="8" height="20" rx="2" fill="#E04A4A"/>
+              <circle cx="56" cy="68" r="12" fill="#3A3F4A"/><circle cx="56" cy="68" r="5" fill="#C7CDD6"/>
+              <circle cx="150" cy="68" r="12" fill="#3A3F4A"/><circle cx="150" cy="68" r="5" fill="#C7CDD6"/>
+            </svg>
+          </span>
+          <span class="legenda-ilustrada">Exclusivo Ônibus Porto<br>Alegre</span>
+        </button>
+      </div>
+
+      <!-- ═══════════ VIEW: TIPO DE PASSAGEM ═══════════ -->
+      <div class="view fluxo" id="view-qrTipo">
+        <h2 class="titulo-grande">Qual tipo de passagem deseja comprar?</h2>
+        <button class="opcao-ilustrada" onclick="navegar('qrQtd')">
+          <span class="ico-qr-grande" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/></svg>
+          </span>
+          <span class="legenda-ilustrada">Passagem Avulsa<br>QRCode</span>
+        </button>
+      </div>
+
+      <!-- ═══════════ VIEW: QUANTIDADE DE PASSAGENS AVULSAS ═══════════ -->
+      <div class="view fluxo" id="view-qrQtd">
+        <h2 class="titulo-grande">Quantas Passagens Avulsas QRCode você deseja comprar?</h2>
+
+        <div class="num-grid" id="numGridQr">
+          <button class="num-btn" onclick="escolherQtdQr(1,this)">1</button>
+          <button class="num-btn" onclick="escolherQtdQr(2,this)">2</button>
+          <button class="num-btn" onclick="escolherQtdQr(3,this)">3</button>
+          <button class="num-btn" onclick="escolherQtdQr(4,this)">4</button>
+          <button class="num-btn" onclick="escolherQtdQr(5,this)">5</button>
+          <button class="num-btn" onclick="escolherQtdQr(6,this)">6</button>
+          <button class="num-btn" onclick="escolherQtdQr(7,this)">7</button>
+          <button class="num-btn" onclick="escolherQtdQr(8,this)">8</button>
+          <button class="num-btn" onclick="escolherQtdQr(9,this)">9</button>
+          <button class="num-btn dez" onclick="escolherQtdQr(10,this)">10</button>
+        </div>
+
+        <div class="resumo-laranja">
+          Quantidade desejada: <span id="qtdQrLabel">0</span><br>
+          <b>Resumo do pedido: <span id="totalQrLabel">R$ 0,00</span></b>
+        </div>
+
+        <button class="btn primario" id="btnAvancarQr" onclick="irPagamentoQr()" disabled>Avançar</button>
+      </div>
+
+      <!-- ═══════════ VIEW: QR — PAGAMENTO ═══════════ -->
+      <div class="view fluxo" id="view-qrPagamento">
+        <h2 class="titulo-grande">Qual a forma de pagamento?</h2>
+
+        <div class="info-produto">
+          <div class="prod">Passagem Avulsa QRCode</div>
+          <div class="linha">Quantidade: <span id="qtdQrPag">0</span></div>
+          <div class="mini">Disponível para uso em até 30 minutos.</div>
+        </div>
+
+        <!-- PIX -->
+        <div class="metodo-pgto">
+          <span class="metodo-logo" aria-hidden="true">
+            <svg viewBox="0 0 48 48"><g fill="#32BCAD"><rect x="14" y="14" width="20" height="20" rx="5" transform="rotate(45 24 24)"/></g><circle cx="39" cy="10" r="2.6" fill="#32BCAD"/></svg>
+          </span>
+          <div class="metodo-txt">
+            <div class="metodo-nome">PIX</div>
+            <div class="metodo-valores">Taxa <b>R$ 0,00</b><br>Valor Total <b id="totalQrPix">R$ 0,00</b></div>
+          </div>
+          <button class="btn azul" onclick="pagarQr('pix')">Pagar</button>
+        </div>
+
+        <!-- Cartão de Crédito -->
+        <div class="metodo-pgto">
+          <span class="metodo-logo" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 9.5h19"/><path d="M6 15h4"/></svg>
+          </span>
+          <div class="metodo-txt">
+            <div class="metodo-nome">Cartão de Crédito</div>
+            <div class="metodo-valores">Taxa <b>R$ 1,00</b><br>Valor Total <b id="totalQrCredito">R$ 0,00</b></div>
+          </div>
+          <button class="btn azul" onclick="pagarQr('credito')">Pagar</button>
+        </div>
+
+        <!-- Boleto -->
+        <div class="metodo-pgto">
+          <span class="metodo-logo" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.6" stroke-linecap="round"><path d="M4 5v14M7 5v14M10 5v14M13.5 5v14M17 5v14M20 5v14" opacity=".9"/></svg>
+          </span>
+          <div class="metodo-txt">
+            <div class="metodo-nome">Boleto</div>
+            <div class="metodo-valores">Taxa <b>R$ 2,50</b><br>Valor Total <b id="totalQrBoleto">R$ 0,00</b></div>
+          </div>
+          <button class="btn azul" onclick="pagarQr('boleto')">Pagar</button>
+        </div>
+
+        <p class="nota-uso">Disponível para o uso em até 30 minutos nos ônibus de Porto Alegre.</p>
+      </div>
+
+      <!-- ═══════════ VIEW: PEDIDOS (lista com abas) ═══════════ -->
+      <div class="view fluxo" id="view-pedidos">
+        <div class="pedidos-tabs">
+          <button class="ped-tab ativa" id="ped-tab-aberto" onclick="mostrarTabPedidos('aberto')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+            Em aberto
+          </button>
+          <button class="ped-tab" id="ped-tab-pagos" onclick="mostrarTabPedidos('pagos')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3z"/><path d="M9 8h6M9 12h6"/></svg>
+            Pagos
+          </button>
+          <button class="ped-tab" id="ped-tab-cancelados" onclick="mostrarTabPedidos('cancelados')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9l6 6M15 9l-6 6"/></svg>
+            Cancelados
+          </button>
+        </div>
+
+        <!-- Em aberto -->
+        <div id="ped-lista-aberto">
+          <div class="pedido-card">
+            <div class="num">27994157</div>
+            <div class="produto">QRCODE POA</div>
+            <div class="data">Data da solicitação: 11/06/2026 11:33</div>
+            <span class="pedido-badge aberto">Aguardando Confirmação</span>
+            <button class="btn-detalhe" onclick="abrirDetalhe('27994157')">Detalhe</button>
+          </div>
+        </div>
+
+        <!-- Pagos -->
+        <div id="ped-lista-pagos" class="oculto">
+          <div class="pedido-card">
+            <div class="num">26238426</div>
+            <div class="produto">QRCODE POA</div>
+            <div class="data">Data da solicitação: 10/03/2026 09:42</div>
+            <span class="pedido-badge pago">Liberado</span>
+            <button class="btn-detalhe" onclick="abrirDetalhe('26238426')">Detalhe</button>
+          </div>
+          <div class="pedido-card">
+            <div class="num">22855607</div>
+            <div class="produto">QRCODE POA</div>
+            <div class="data">Data da solicitação: 07/08/2025 16:51</div>
+            <span class="pedido-badge pago">Liberado</span>
+            <button class="btn-detalhe" onclick="abrirDetalhe('22855607')">Detalhe</button>
+          </div>
+        </div>
+
+        <!-- Cancelados -->
+        <div id="ped-lista-cancelados" class="oculto">
+          <div class="pedido-card">
+            <div class="num">27479345</div>
+            <div class="produto">QRCODE POA</div>
+            <div class="data">Data da solicitação: 15/05/2026 10:05</div>
+            <span class="pedido-badge excluido">Excluído</span>
+            <button class="btn-detalhe" onclick="abrirDetalhe('27479345')">Detalhe</button>
+          </div>
+          <div class="pedido-card">
+            <div class="num">27254632</div>
+            <div class="produto">QRCODE POA</div>
+            <div class="data">Data da solicitação: 04/05/2026 16:26</div>
+            <span class="pedido-badge excluido">Excluído</span>
+            <button class="btn-detalhe" onclick="abrirDetalhe('27254632')">Detalhe</button>
+          </div>
+          <div class="pedido-card">
+            <div class="num">26154683</div>
+            <div class="produto">QRCODE POA</div>
+            <div class="data">Data da solicitação: 05/03/2026 14:17</div>
+            <span class="pedido-badge excluido">Excluído</span>
+            <button class="btn-detalhe" onclick="abrirDetalhe('26154683')">Detalhe</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════ VIEW: PEDIDO — DETALHE ═══════════ -->
+      <div class="view fluxo" id="view-pedidoDetalhe">
+        <div class="detalhe-card">
+          <div class="detalhe-topo">
+            <div class="pnum" id="detNum">Pedido: 27994157</div>
+            <div class="pprod">Produto: QR Code TRI</div>
+          </div>
+          <div class="detalhe-corpo">
+            <div class="detalhe-linha">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9h18M8 2.5v4M16 2.5v4"/></svg>
+              <span>Data da solicitação: <span id="detData"></span></span>
+            </div>
+            <div class="detalhe-linha">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M14.5 9c-.5-.8-1.4-1.2-2.5-1.2-1.3 0-2.3.7-2.3 1.7 0 2.4 5 1.1 5 3.5 0 1-1 1.7-2.5 1.7-1.2 0-2.2-.5-2.7-1.3M12 6.5v11"/></svg>
+              <span>Valor do pedido: <span id="detValor"></span></span>
+            </div>
+            <div class="detalhe-linha">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg>
+              <span>Situação: <span id="detSituacao"></span></span>
+            </div>
+            <div class="detalhe-linha titulo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>
+              <span>Resumo do Pedido:</span>
+            </div>
+            <div class="detalhe-linha">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20L12 3z"/><path d="M12 10v4M12 17h.01"/></svg>
+              <span>Saldo devedor: R$ 0,00</span>
+            </div>
+            <div class="detalhe-linha">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4V8z"/><path d="M14 6v12" stroke-dasharray="2 2"/></svg>
+              <span>Quantidade de passagens: <span id="detQtd"></span></span>
+            </div>
+            <div class="detalhe-linha">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 12h2M12 12h2M8 16h2M12 16h2"/></svg>
+              <span>Total do pedido: <span id="detTotal"></span></span>
+            </div>
+            <div class="detalhe-acoes" id="detAcoes">
+              <button class="btn azul" onclick="pagarPedido()">Pagar</button>
+              <button class="btn aguarde" disabled>Aguarde 307s</button>
+            </div>
+          </div>
+        </div>
+        <div class="nota-loja">Para mais informações de usos, somente na Loja Central do TRI.</div>
+      </div>
+
+      <!-- ═══════════ VIEW: NOTIFICAÇÕES ═══════════ -->
+      <div class="view fluxo" id="view-notificacoes">
+        <div class="notif-card">
+          <h4>Dica de verão!</h4>
+          <p>Saiba quais ônibus têm ar-condicionado pelo app TRI GPS. Basta selecionar a
+            linha desejada e se possui o ícone *.</p>
+          <div class="data">15/01/2026 18:46</div>
+        </div>
+
+        <div class="notif-card">
+          <h4>Aviso!</h4>
+          <p>Nossas linhas estão indisponíveis, Call center temporariamente inoperante.
+            Precisando dos nossos serviços acesse www.tripoa.net.br ou app do cartão TRI.</p>
+          <div class="data">04/12/2025 15:07</div>
+        </div>
+
+        <div class="notif-card">
+          <h4>Atenção!</h4>
+          <p>Hoje é o último dia de atendimento na Av. João Pessoa 1105. A partir de 27/10
+            o TRI atenderá no Lg Visconde do Cairú 10!</p>
+          <div class="data">24/10/2025 16:25</div>
+        </div>
+
+        <div class="notif-card">
+          <h4>Atenção!</h4>
+          <p>O serviço de telefonia do TRI está inoperante no momento. Para informações,
+            cancelamento de cartão e pedido de segunda via acesse www.tripoa.net.br, app TRI
+            ou tente mais tarde.</p>
+          <div class="data">11/03/2025 15:09</div>
+        </div>
+      </div>
+
+      <!-- ═══════════ VIEW: EXTRATO (Saldo + Últimos usos) ═══════════ -->
+      <div class="view fluxo" id="view-extrato">
+        <div class="saldo-card">
+          <div class="cartao-ref">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 9.5h19"/><path d="M6 15h4"/></svg>
+            Cartão 98.03.000000051-9
+          </div>
+          <div class="saldo-label">Saldo disponível</div>
+          <div class="saldo-valor">R$ 24,80</div>
+          <div class="saldo-breakdown">
+            <div class="item"><div class="t">Vale Transporte</div><div class="v">R$ 14,80</div></div>
+            <div class="item"><div class="t">Pass. Antecipada</div><div class="v">R$ 10,00</div></div>
+          </div>
+          <div class="saldo-atualizado">Atualizado em 12/06/2026 11:33</div>
+        </div>
+
+        <div class="extrato-secao">Últimos usos</div>
+
+        <div class="uso-item">
+          <span class="uso-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3.5" width="16" height="13" rx="2"/><path d="M4 10h16"/><path d="M7 16.5v2.5M17 16.5v2.5"/><circle cx="8" cy="13.2" r="1"/><circle cx="16" cy="13.2" r="1"/></svg></span>
+          <div class="uso-info">
+            <div class="uso-linha">Linha 281 — Campo Novo / Centro</div>
+            <div class="uso-meta">11/06/2026 18:42 · Vale Transporte</div>
+          </div>
+          <div class="uso-valor">- R$ 5,30</div>
+        </div>
+
+        <div class="uso-item">
+          <span class="uso-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3.5" width="16" height="13" rx="2"/><path d="M4 10h16"/><path d="M7 16.5v2.5M17 16.5v2.5"/><circle cx="8" cy="13.2" r="1"/><circle cx="16" cy="13.2" r="1"/></svg></span>
+          <div class="uso-info">
+            <div class="uso-linha">Linha T11 — Triângulo / Centro</div>
+            <div class="uso-meta">11/06/2026 08:14 · Vale Transporte</div>
+          </div>
+          <div class="uso-valor">- R$ 5,30</div>
+        </div>
+
+        <div class="uso-item">
+          <span class="uso-ico credito" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16V8M8.5 11.5 12 8l3.5 3.5"/></svg></span>
+          <div class="uso-info">
+            <div class="uso-linha">Recarga via PIX</div>
+            <div class="uso-meta">10/06/2026 19:05 · Crédito adicionado</div>
+          </div>
+          <div class="uso-valor credito">+ R$ 20,00</div>
+        </div>
+
+        <div class="uso-item">
+          <span class="uso-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3.5" width="16" height="13" rx="2"/><path d="M4 10h16"/><path d="M7 16.5v2.5M17 16.5v2.5"/><circle cx="8" cy="13.2" r="1"/><circle cx="16" cy="13.2" r="1"/></svg></span>
+          <div class="uso-info">
+            <div class="uso-linha">Linha 343 — Protásio Alves</div>
+            <div class="uso-meta">09/06/2026 17:50 · Passagem Antecipada</div>
+          </div>
+          <div class="uso-valor">- R$ 5,30</div>
+        </div>
+
+        <div class="uso-item">
+          <span class="uso-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3.5" width="16" height="13" rx="2"/><path d="M4 10h16"/><path d="M7 16.5v2.5M17 16.5v2.5"/><circle cx="8" cy="13.2" r="1"/><circle cx="16" cy="13.2" r="1"/></svg></span>
+          <div class="uso-info">
+            <div class="uso-linha">Linha B43 — Lomba do Pinheiro</div>
+            <div class="uso-meta">08/06/2026 07:33 · Vale Transporte</div>
+          </div>
+          <div class="uso-valor">- R$ 5,30</div>
+        </div>
+      </div>
+
+      <!-- ═══════════ VIEW: PERFIL ═══════════ -->
+      <div class="view fluxo" id="view-perfil">
+        <div class="perfil-topo">
+          <div class="perfil-avatar">GD</div>
+          <div class="perfil-id">
+            <div class="nome">Giovana Dias</div>
+            <div class="dado">CPF: ***.***.*89-00</div>
+            <div class="dado">giovana@email.com</div>
+          </div>
+        </div>
+
+        <div class="perfil-secao">Conta</div>
+
+        <button class="perfil-opcao" onclick="modalForaEscopo('Dados pessoais')">
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/></svg></span>
+          <span class="txt"><strong>Dados pessoais</strong><span>Nome, CPF e data de nascimento</span></span>
+          <span class="seta">›</span>
+        </button>
+
+        <button class="perfil-opcao" onclick="modalForaEscopo('Atualização de Contato')">
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>
+          <span class="txt"><strong>Atualização de contato</strong><span>E-mail e telefone</span></span>
+          <span class="seta">›</span>
+        </button>
+
+        <button class="perfil-opcao" onclick="modalForaEscopo('Endereço')">
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
+          <span class="txt"><strong>Endereço</strong><span>Endereço de cadastro e entrega</span></span>
+          <span class="seta">›</span>
+        </button>
+
+        <button class="perfil-opcao" onclick="modalForaEscopo('Alterar senha')">
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+          <span class="txt"><strong>Alterar senha</strong><span>Atualize sua senha de acesso</span></span>
+          <span class="seta">›</span>
+        </button>
+
+        <button class="perfil-opcao" onclick="modalForaEscopo('Biometria')">
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5.6 9.5A7 7 0 0 1 12 5c2.8 0 5.2 1.6 6.4 4"/><path d="M8.5 12a3.5 3.5 0 0 1 7 0c0 2.5.6 4.5 1.5 6"/><path d="M12 12v3a7 7 0 0 0 1 3.5"/></svg></span>
+          <span class="txt"><strong>Biometria</strong><span>Acesso e validação por biometria</span></span>
+          <span class="seta">›</span>
+        </button>
+
+        <div class="perfil-secao">Preferências</div>
+
+        <button class="perfil-opcao" onclick="abrirNotificacoes()">
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></span>
+          <span class="txt"><strong>Notificações</strong><span>Avisos e novidades do TRI</span></span>
+          <span class="seta">›</span>
+        </button>
+
+        <div class="perfil-secao">Suporte</div>
+
+        <button class="perfil-opcao" onclick="modalForaEscopo('Ajuda')">
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.4 2.3c-.7.3-.9.7-.9 1.7"/><path d="M12 17h.01"/></svg></span>
+          <span class="txt"><strong>Ajuda</strong><span>Dúvidas frequentes e contato</span></span>
+          <span class="seta">›</span>
+        </button>
+
+        <button class="perfil-opcao" onclick="modalForaEscopo('Sobre')">
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg></span>
+          <span class="txt"><strong>Sobre</strong><span>Versão do app, termos e privacidade</span></span>
+          <span class="seta">›</span>
+        </button>
+
+        <button class="btn-sair-perfil" onclick="sair()">Sair</button>
+        <div class="perfil-versao">App TRI · versão 1.1.0</div>
+      </div>
+
+      <!-- ═══════════ VIEW: SOLICITAR CARTÃO ═══════════ -->
+      <div class="view fluxo" id="view-solicitarCartao">
+        <p class="subtitulo" style="margin-top:8px">Você ainda não possui um cartão TRI. Solicite o seu para começar a usar o transporte.</p>
+        <button class="btn-solicitar-cartao" onclick="modalForaEscopo('Solicitar Cartão')">
+          <span class="txt">Solicitar Cartão</span>
+          <span class="logos"><span>sim</span><span>tri</span></span>
+        </button>
+      </div>
+
+      <!-- ═══════════ VIEW: MEUS CARTÕES (lista) ═══════════ -->
+      <div class="view fluxo" id="view-cartoes">
+        <div class="escolha-titulo">Escolha o cartão:</div>
+
+        <div class="cartao-item" onclick="selecionarCartao('51-9')">
+          <div class="cartao-visual azul">
+            <span class="logo-c">tri<small>transporte<br>integrado</small></span>
+            <span class="rota-c" aria-hidden="true"></span>
+            <span class="legenda-c">Transporte Integrado</span>
+          </div>
+          <span class="cartao-badge ativo">ATIVO</span>
+          <div class="cartao-num"><span class="lbl">Cartão</span> 98.03.000000051-9</div>
+          <div class="cartao-tipos">TRI - VALE TRANSPORTE / TRI - PASSAGEM ANTECIPADA</div>
+        </div>
+
+        <div class="cartao-item cancelado-item" onclick="selecionarCartao('49-1')">
+          <div class="cartao-visual escolar">
+            <span class="logo-c">tri<small>transporte<br>integrado</small></span>
+            <span class="rota-c" aria-hidden="true"></span>
+            <span class="foto-aluno" aria-hidden="true">🧑‍🎓</span>
+            <span class="legenda-c">Passagem Escolar</span>
+          </div>
+          <span class="cartao-badge cancelado">CANCELADO</span>
+          <div class="cartao-num"><span class="lbl">Cartão</span> 98.03.000000049-1</div>
+          <div class="cartao-tipos">TRI - PASSAGEM ESCOLAR / TRI - PASSAGEM ANTECIPADA</div>
+        </div>
+      </div>
+
+      <!-- ═══════════ VIEW: CARTÃO — DETALHE ═══════════ -->
+      <div class="view fluxo" id="view-cartaoDetalhe">
+        <div class="cartao-visual azul" id="detCartaoVisual" style="margin-top:6px">
+          <span class="logo-c">tri<small>transporte<br>integrado</small></span>
+          <span class="rota-c" aria-hidden="true"></span>
+          <span class="foto-aluno" id="detFoto" aria-hidden="true">🧑‍🎓</span>
+          <span class="legenda-c" id="detLegenda">Transporte Integrado</span>
+        </div>
+        <span class="cartao-badge ativo" id="detCartaoBadge">ATIVO</span>
+        <div class="cartao-num"><span class="lbl">Cartão</span> <span id="detCartaoNum"></span></div>
+        <div class="cartao-tipos" id="detCartaoTipos"></div>
+
+        <button class="btn-acao-cartao amarelo" id="btn2via" onclick="solicitar2via()">
+          <span id="btn2viaLabel">Cancelar / Solicitar 2ª via de cartão</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.5a8 8 0 1 0-1.9 6.1"/><path d="M20 4.5v4.5h-4.5"/></svg>
+        </button>
+        <button class="btn-acao-cartao vermelho" id="btnCancelarCartao" onclick="cancelarCartao()">
+          <span>Cancelar cartão</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>
+        </button>
+      </div>
+
+      <!-- ═══════════ VIEW: CANCELAR CARTÃO — MOTIVO ═══════════ -->
+      <div class="view fluxo" id="view-cancelarCartao">
+        <div class="cancel-subtitulo">Selecione o motivo:</div>
+        <button class="motivo-btn" onclick="selecionarMotivo('Cartão Perdido')">Cartão Perdido</button>
+        <button class="motivo-btn" onclick="selecionarMotivo('Cartão Roubado')">Cartão Roubado</button>
+        <button class="motivo-btn" onclick="selecionarMotivo('Cartão Danificado')">Cartão Danificado</button>
+      </div>
+
+      <!-- ═══════════ VIEW: CANCELAMENTO — CONFIRMAÇÃO ═══════════ -->
+      <div class="view fluxo" id="view-cancelamentoConfirmacao">
+        <div class="icone-sucesso">✓</div>
+        <div class="cancel-sucesso-txt">A solicitação de cancelamento do cartão foi efetuada com sucesso!</div>
+        <div class="cancel-protocolo">Seu protocolo <b id="protocoloCancelamento">01727357778</b> foi enviado para seu e-mail.</div>
+        <button class="btn primario" onclick="finalizarCancelamento()">Confirmar</button>
+      </div>
+
+      <!-- ═══════════ 2ª VIA: LOCAL DE RETIRADA ═══════════ -->
+      <div class="view fluxo" id="view-viaRetirada">
+        <h2 class="titulo-grande">Selecione o local de retirada</h2>
+        <button class="local-opcao" onclick="retirada2via('AV. ASSIS BRASIL, 4320 - SARANDI, PORTO ALEGRE')">
+          <strong>Posto Triângulo</strong>
+          <small>Av. Assis Brasil, 4320 - Sarandi, Porto Alegre</small>
+        </button>
+        <button class="local-opcao" onclick="retirada2via('AV. JOÃO PESSOA, 1105 - FARROUPILHA, PORTO ALEGRE')">
+          <strong>SMDS</strong>
+          <small>Av. João Pessoa, 1105 - Farroupilha, Porto Alegre</small>
+        </button>
+        <button class="local-opcao" onclick="entrega2viaCasa()">
+          <strong>Receber em casa</strong>
+        </button>
+        <div class="prazo-entrega">
+          <b>Prazo de entrega:</b>
+          <span>A partir de 3 dias úteis.</span>
+        </div>
+      </div>
+
+      <!-- ═══════════ 2ª VIA: ENDEREÇO DE ENTREGA ═══════════ -->
+      <div class="view fluxo" id="view-viaEndereco">
+        <h2 class="titulo-grande">Selecione o endereço de entrega</h2>
+        <button class="local-opcao" onclick="selecionarEndereco2via('AV. ASSIS BRASIL, 4320 - SARANDI, PORTO ALEGRE')">
+          <strong>Endereço Residencial</strong>
+          <small>Av. Assis Brasil, 4320 - Sarandi, Porto Alegre</small>
+        </button>
+        <button class="link-acao" onclick="modalForaEscopo('Editar endereço')">Editar</button>
+
+        <div id="viaEnderecoEntrega" class="oculto">
+          <button class="local-opcao" onclick="selecionarEndereco2via('AV. PROTÁSIO ALVES, 3886 - PETRÓPOLIS, PORTO ALEGRE')">
+            <strong>Endereço Entrega</strong>
+            <small>Av. Protásio Alves, 3886 - Petrópolis, Porto Alegre</small>
+          </button>
+          <button class="link-acao" onclick="modalForaEscopo('Editar endereço')">Editar</button>
+        </div>
+
+        <button class="btn-contorno" onclick="navegar('viaCadastroEndereco')">Cadastrar endereço de entrega</button>
+
+        <div class="prazo-entrega">
+          <b>Prazo de entrega:</b>
+          <span>A partir de 3 dias úteis.</span>
+        </div>
+      </div>
+
+      <!-- ═══════════ 2ª VIA: CADASTRO DE ENDEREÇO ═══════════ -->
+      <div class="view fluxo" id="view-viaCadastroEndereco">
+        <h2 class="titulo-grande">Cadastro de Endereço</h2>
+        <div class="campo"><input placeholder="CEP" inputmode="numeric"></div>
+        <button class="btn azul" onclick="modalForaEscopo('Procurar pelo CEP')">Procurar pelo CEP</button>
+        <div style="height:14px"></div>
+        <div class="campo"><input placeholder="Endereço de Entrega"></div>
+        <div class="campo"><select><option>Estado</option><option>RS</option></select></div>
+        <div class="campo"><input placeholder="Cidade"></div>
+        <div class="campo"><input placeholder="Bairro"></div>
+        <div class="campo"><input placeholder="Rua"></div>
+        <div class="campo"><input placeholder="Número" inputmode="numeric"></div>
+        <div class="campo"><input placeholder="Complemento"></div>
+        <button class="btn primario" onclick="salvarEndereco2via()">Salvar</button>
+      </div>
+
+      <!-- ═══════════ 2ª VIA: AVISO IMPORTANTE (PRAZO) ═══════════ -->
+      <div class="view fluxo" id="view-viaAviso">
+        <h2 class="titulo-grande">Aviso Importante: Prazo para Retirada do Cartão</h2>
+        <p class="texto-corrido">Informamos que, após a solicitação do cartão, o mesmo ficará
+          disponível para retirada pelo prazo de <b>120 dias</b>. Caso não seja retirado dentro
+          desse período, o cartão será automaticamente mutilado e descartado de forma segura, sem
+          possibilidade de recuperação. Caso o usuário deseje solicitar um novo cartão a prazo, será
+          necessária a emissão de uma nova via, sujeita à cobrança de eventuais taxas.</p>
+        <button class="btn azul" onclick="navegar('viaSucesso')">Avançar</button>
+      </div>
+
+      <!-- ═══════════ 2ª VIA: SOLICITAÇÃO REALIZADA (FIB) ═══════════ -->
+      <div class="view fluxo" id="view-viaSucesso">
+        <h2 class="titulo-grande">Solicitação realizada com sucesso</h2>
+        <div class="cancel-protocolo" style="text-align:left;margin:6px 0 14px">Protocolo: <b>2024124772440</b></div>
+        <p class="texto-corrido">Olá! Sua solicitação do Cartão FIB foi realizada com sucesso. O
+          prazo de recebimento no endereço selecionado é a partir de <b>3 dias úteis</b>, após a
+          confirmação do pagamento.</p>
+        <button class="btn azul" onclick="navegar('viaPagamento')">Pagar</button>
+      </div>
+
+      <!-- ═══════════ 2ª VIA: PAGAMENTO (PIX) ═══════════ -->
+      <div class="view fluxo" id="view-viaPagamento">
+        <div class="pix-logo" style="margin-top:6px">
+          <svg width="36" height="36" viewBox="0 0 48 48" aria-hidden="true"><g fill="#32BCAD"><rect x="13" y="13" width="22" height="22" rx="6" transform="rotate(45 24 24)"/></g><circle cx="40" cy="9" r="3" fill="#32BCAD"/></svg>
+          <div class="letras" style="font-size:24px">pix<small>powered by <b>Banco Central</b></small></div>
+        </div>
+
+        <div class="qr-fake" id="qrFakeVia" aria-label="QR Code PIX (ilustrativo)"></div>
+
+        <div class="pill-expira">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          Expira em: 19/11/2024 16:07
+        </div>
+
+        <div class="chave-box"><span>00020101021226850014br.gov.bcb.pix2563qrcode.tri...</span><b>›</b></div>
+
+        <div class="opcoes-pix">
+          <p>Escaneie o código com seu celular ou copie o código PIX no app do seu banco.</p>
+        </div>
+
+        <div class="valor-central" style="margin-top:14px">Número do pedido: 19070299</div>
+        <div class="valor-central" style="font-size:15px;margin-top:4px">Valor da compra: R$ 11,90</div>
+
+        <button class="btn azul" style="margin-top:16px" onclick="reiniciarPrototipo()">Concluir</button>
+      </div>
+
+      <!-- ═══════════ VIEW: PERFIS — réplica da tela "Solicitar Cartão" ═══════════ -->
+      <div class="view fluxo" id="view-perfis">
+        <h2 class="titulo-pagina">Solicitar Benefício</h2>
+        <p class="subtitulo">Selecione o perfil habilitado para iniciar a solicitação do benefício.</p>
+
+        <div class="stepper">
+          <span class="step active"></span><span class="step"></span><span class="step"></span>
+          <span class="step"></span><span class="step"></span>
+        </div>
+
+        <div class="aviso">
+          No momento, os perfis <b>Escolar</b> e <b>TRI Idoso</b> estão disponíveis para
+          solicitação pelo aplicativo. Para o TRI Idoso, o app solicitará foto do documento
+          (RG/CNH) e biometria facial com prova de vida. Os demais perfis serão liberados em breve.
+        </div>
+
+        <!-- perfis de fase futura — ocultos nesta versão -->
+        <button class="cartao-perfil indisponivel oculto" onclick="perfilIndisponivel('Passe Antecipado')">
+          <span class="badge-breve">Em breve</span>
+          <span class="perfil-ico" style="background:var(--orange)">💳</span>
+          <span class="txt">
+            <strong>Passe Antecipado</strong>
+            <span>Solicitação de cartão comum para utilização antecipada de créditos.</span>
+          </span>
+          <span class="seta">›</span>
+        </button>
+
+        <button class="cartao-perfil" onclick="iniciarIdoso()">
+          <span class="perfil-ico" style="background:var(--primary-light)">👴</span>
+          <span class="txt">
+            <strong>TRI Idoso</strong>
+            <span>Solicitação com validação de documento (RG/CNH) e biometria facial com prova de vida.</span>
+          </span>
+          <span class="seta">›</span>
+        </button>
+
+        <button class="cartao-perfil" onclick="navegar('escolar')">
+          <span class="perfil-ico" style="background:var(--pink)">🎓</span>
+          <span class="txt">
+            <strong>Escolar</strong>
+            <span>Fluxo de benefício escolar, renovação ou emissão conforme regras do cadastro.</span>
+          </span>
+          <span class="seta">›</span>
+        </button>
+      </div>
+
+      <!-- ═══════════ TRI IDOSO: VALIDAÇÃO DO DOCUMENTO ═══════════ -->
+      <div class="view fluxo" id="view-idosoDocumento">
+        <span class="etiqueta">Benefício: TRI Idoso</span>
+        <h2 class="titulo-pagina">Validação do documento</h2>
+        <p class="subtitulo">Escolha o tipo de documento e fotografe a frente do documento de identificação.</p>
+
+        <div class="stepper">
+          <span class="step active"></span><span class="step"></span>
+          <span class="step"></span><span class="step"></span>
+        </div>
+
+        <button class="opcao-doc selecionada" onclick="tipoDocIdoso(this,'RG')">RG <span class="check">✓</span></button>
+        <button class="opcao-doc" onclick="tipoDocIdoso(this,'CNH')">CNH <span class="check"></span></button>
+
+        <div class="camera" id="cameraDocIdoso">
+          <div class="linha-scan"></div>
+          <div class="cam-ico">📷</div>
+          <div class="cam-txt" id="cameraDocIdosoTexto">Posicione o documento em local iluminado, sem cortes e sem reflexos.</div>
+          <span class="badge-captura">DOCUMENTO CAPTURADO</span>
+        </div>
+
+        <div class="aviso atencao">
+          O documento precisa estar legível. A foto será usada para comparar os dados e a
+          imagem facial com a biometria do próximo passo.
+        </div>
+
+        <button class="btn primario" id="btnCapturarDocIdoso" onclick="capturarDocIdoso()">Tirar foto do documento</button>
+        <button class="btn ambar oculto" id="btnIrBiometria" onclick="navegar('idosoBiometria')">Continuar para biometria</button>
+      </div>
+
+      <!-- ═══════════ TRI IDOSO: BIOMETRIA FACIAL (LIVENESS) ═══════════ -->
+      <div class="view fluxo" id="view-idosoBiometria">
+        <span class="etiqueta">Benefício: TRI Idoso</span>
+        <h2 class="titulo-pagina">Biometria facial</h2>
+        <p class="subtitulo">Centralize o rosto no círculo. Faremos uma prova de vida (liveness) com movimentos simples.</p>
+
+        <div class="stepper">
+          <span class="step done"></span><span class="step active"></span>
+          <span class="step"></span><span class="step"></span>
+        </div>
+
+        <div class="camera selfie-circulo" id="cameraBioIdoso">
+          <div class="linha-scan"></div>
+          <div class="cam-ico">🙂</div>
+          <div class="cam-txt" id="cameraBioIdosoTexto">Olhe para a câmera, retire óculos escuros e mantenha o rosto bem iluminado.</div>
+          <span class="badge-captura">PROVA DE VIDA OK</span>
+        </div>
+
+        <ul class="lista-liveness" id="listaLiveness">
+          <li id="liv1"><span class="liv-check">✓</span> Rosto centralizado</li>
+          <li id="liv2"><span class="liv-check">✓</span> Pisque os olhos</li>
+          <li id="liv3"><span class="liv-check">✓</span> Sorria</li>
+          <li id="liv4"><span class="liv-check">✓</span> Vire levemente a cabeça</li>
+        </ul>
+
+        <button class="btn primario" id="btnLiveness" onclick="iniciarLiveness()">Iniciar prova de vida</button>
+      </div>
+
+      <!-- ═══════════ TRI IDOSO: VALIDAÇÃO CONCLUÍDA ═══════════ -->
+      <div class="view fluxo" id="view-idosoValidacao">
+        <span class="etiqueta">Validação facial</span>
+        <h2 class="titulo-pagina">Validação concluída</h2>
+        <p class="subtitulo">Documento e biometria conferidos com sucesso — prova de vida aprovada.</p>
+
+        <div class="stepper">
+          <span class="step done"></span><span class="step done"></span>
+          <span class="step active"></span><span class="step"></span>
+        </div>
+
+        <div class="icone-sucesso">✓</div>
+
+        <div class="aviso sucesso">
+          Identidade validada. Agora confirme o envio da solicitação do benefício TRI Idoso.
+        </div>
+
+        <button class="btn primario" onclick="navegar('idosoSucesso')">Enviar solicitação</button>
+      </div>
+
+      <!-- ═══════════ TRI IDOSO: SOLICITAÇÃO REALIZADA ═══════════ -->
+      <div class="view fluxo" id="view-idosoSucesso">
+        <h2 class="titulo-pagina">Solicitação realizada com sucesso</h2>
+        <div class="stepper">
+          <span class="step done"></span><span class="step done"></span>
+          <span class="step done"></span><span class="step active"></span>
+        </div>
+
+        <div class="cancel-protocolo" style="text-align:left;margin:10px 0 12px">Protocolo: <b>2026061755443</b></div>
+        <p class="texto-corrido">Olá! Sua solicitação do benefício <b>TRI Idoso</b> foi realizada
+          com sucesso e passará por análise. Você receberá um aviso quando o benefício for
+          aprovado — acompanhe pelo menu <b>Benefícios</b>, na tela inicial.</p>
+
+        <button class="btn azul" onclick="reiniciarPrototipo()">Concluir</button>
+      </div>
+
+      <!-- ═══════════ VIEW: ESCOLAR — ENTRADA (tela 1) ═══════════ -->
+      <div class="view fluxo" id="view-escolar">
+
+        <div class="card-escolar" aria-hidden="true">
+          <div class="rota"></div>
+          <div class="topo">
+            <img class="logo" src="./assets/icons/logo_tri.svg" alt="TRI">
+            <div class="foto">🧑‍🎓</div>
+          </div>
+          <div class="nome-cartao">Passagem Escolar</div>
+          <div class="tipo">TRI · Transporte Integrado</div>
+        </div>
+
+        <button class="cta-escolar" onclick="navegar('informacoes')">
+          <span>Solicitar Benefício<br>Escolar</span>
+          <span class="ico-cta" aria-hidden="true">✏️</span>
+        </button>
+
+        <button class="cta-escolar" onclick="verSituacao(estadoSituacao); navegar('situacao')">
+          <span>Acompanhar<br>Solicitação</span>
+          <span class="ico-cta" aria-hidden="true">🔍</span>
+        </button>
+      </div>
+
+      <!-- ═══════════ VIEW: INFORMAÇÕES (telas 2 e 2A) ═══════════ -->
+      <div class="view fluxo" id="view-informacoes">
+        <div class="titulo-secao">Informações</div>
+        <h2 class="titulo-info">Prazos para a análise da EPTC:</h2>
+
+        <ul class="lista-info">
+          <li><b>Solicitações de renovação:</b> 25 dias úteis, a partir do envio da solicitação e o aluno tem a liberação de uso e recarga pelo prazo de 30 dias, enquanto aguarda a liberação.</li>
+          <li><b>Solicitações de renovação com segunda via:</b> 12 dias úteis.</li>
+          <li><b>Solicitações de novos benefícios:</b> 12 dias úteis.</li>
+          <li><b>Solicitações de segunda via:</b> 2 dias úteis, via aplicativo, locais presenciais e por telefone, para maiores informações acesse o site¹.</li>
+        </ul>
+
+        <div class="titulo-secao">Observações:</div>
+        <ul class="lista-info">
+          <li>São aceitos como comprovantes de domicílio qualquer correspondência comercial, declaração do posto de saúde, CRAS ou Associação, devidamente assinada e carimbada pela instituição declarante e, desde que atualizado, a Certidão do CadÚnico com o QR Code.</li>
+          <li>São aceitos como comprovantes de renda contracheque, recibo, demonstrativo ou Extrato de benefícios e, desde que atualizado, a Certidão do CadÚnico com o QR Code. Para o beneficiário que não possuir renda ou renda autônoma, deve ser preenchida a declaração contida na FIB, para o grupo familiar deve ser entregue auto declaração. Para quem tem CNPJ deve apresentar Pró-Labore, declaração do contador devidamente carimbada e assinada, ou outros documentos que comprovem o recebimento mensal da empresa (não são aceitos declarações anuais, IRPF ou declaração de pessoa física). Para menores de 14 anos, enviar documento.</li>
+          <li>Lembramos que menores de 18 anos não assinam documentos.</li>
+          <li>Mais informações sobre as faixas de renda e percentuais de isenções, Legislação Vigente e documentos para declarações estão disponíveis no site² da EPTC ou no site³ do Google Maps.</li>
+        </ul>
+
+        <div class="sites">
+          <b>Site(1):</b> <a href="https://www.tripoa.net.br/" target="_blank" rel="noopener">https://www.tripoa.net.br/</a><br>
+          <b>Site(2):</b> <a href="https://prefeitura.poa.br/eptc/passagem-escolar-tri-escolar" target="_blank" rel="noopener">prefeitura.poa.br/eptc/passagem-escolar-tri-escolar</a><br>
+          <b>Site(3):</b> <a href="#" onclick="return false">EPTC - TRI Escolar - Google my Maps</a>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn texto" onclick="voltar()">Voltar</button>
+          <button class="btn primario" onclick="navegar('foto')">Continuar</button>
+        </div>
+      </div>
+
+      <!-- ═══════════ VIEW: FOTO — ETAPA 1 DE 5 (tela 3) ═══════════ -->
+      <div class="view fluxo" id="view-foto">
+        <h2 class="titulo-pagina">Pré Cadastro</h2>
+        <div class="etapa-label">Etapa 1 de 5</div>
+        <div class="stepper">
+          <span class="step active"></span><span class="step"></span><span class="step"></span>
+          <span class="step"></span><span class="step"></span>
+        </div>
+
+        <div class="foto-circulo" id="fotoCirculo">
+          <span id="fotoPlaceholder" aria-hidden="true">👤</span>
+          <button class="fab" onclick="tirarFoto()" aria-label="Tirar foto">📷</button>
+          <span class="badge-foto">FOTO CAPTURADA</span>
+        </div>
+
+        <div class="titulo-secao" style="margin-top:16px">Orientações:</div>
+        <ul class="lista-info">
+          <li>Esteja em um <b>ambiente iluminado</b>, dê preferência a um fundo claro e uniforme;</li>
+          <li>Deixe o <b>rosto bem visível</b>, sem sombras em volta dos olhos, nariz e boca;</li>
+          <li>Não utilize <b>boné, óculos ou outros adereços</b> na cabeça e no rosto;</li>
+          <li>Segure o <b>celular na altura do seu rosto</b>, não posicione a câmera na diagonal;</li>
+          <li>Mantenha sua cabeça <b>dentro do círculo</b> durante todo o processo.</li>
+        </ul>
+
+        <div class="btn-row">
+          <button class="btn texto" onclick="voltar()">Voltar</button>
+          <button class="btn primario" id="btnContinuarFoto" onclick="navegar('cadastro')" disabled>Continuar</button>
+        </div>
+      </div>
+
+      <!-- ═══════════ VIEW: PRÉ-CADASTRO — ETAPA 2 DE 5 (telas 4, 4B e 4C) ═══════════ -->
+      <div class="view fluxo" id="view-cadastro">
+        <h2 class="titulo-pagina">Pré Cadastro</h2>
+        <div class="etapa-label">Etapa 2 de 5</div>
+        <div class="stepper">
+          <span class="step done"></span><span class="step active"></span><span class="step"></span>
+          <span class="step"></span><span class="step"></span>
+        </div>
+
+        <div class="dado-box">
+          <b>CPF:</b> 012.345.789-00<br>
+          <b>Nome:</b> GIOVANA DIAS<br>
+          <b>Data Nascimento:</b> 01/01/2008<br>
+          <b>Nome da Mãe:</b> JOANA DIAS<br>
+          <b>Telefone:</b> (51) 900000000<br>
+          <b>E-mail:</b> GIOVANA@EMAIL.COM
+        </div>
+        <button class="link-acao" onclick="modalForaEscopo('Alterar E-mail/Telefone')">Alterar E-mail/Telefone</button>
+
+        <div class="campo">
+          <label>Nome do Pai:</label>
+          <input placeholder="Nome Completo">
+        </div>
+
+        <div class="campo">
+          <label>Sexo <span class="req">(*)</span>:</label>
+          <div class="radio-grupo">
+            <label><input type="radio" name="sexo"> Masculino</label>
+            <label><input type="radio" name="sexo"> Feminino</label>
+            <label><input type="radio" name="sexo" checked> Não informar</label>
+          </div>
+        </div>
+
+        <div class="campo">
+          <label>Cadastro Único <span class="req">(*)</span>:</label>
+          <div class="radio-grupo linha">
+            <label><input type="radio" name="cadunico"> Sim</label>
+            <label><input type="radio" name="cadunico" checked> Não</label>
+          </div>
+        </div>
+
+        <div class="campo">
+          <label>Renda do beneficiário <span class="req">(*)</span>:</label>
+          <input value="R$ 1.200,00">
+        </div>
+
+        <div class="campo">
+          <label>Escola <span class="req">(*)</span>:</label>
+          <input value="ARTUR DA COSTA E SILVA">
+        </div>
+
+        <div class="campo">
+          <label>Nível de Ensino <span class="req">(*)</span>:</label>
+          <select>
+            <option>ENSINO FUNDAMENTAL</option>
+            <option selected>ENSINO MÉDIO</option>
+            <option>ENSINO SUPERIOR</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label>Renda Per Capta <span class="req">(*)</span>:</label>
+          <input value="R$ 1.200,00" readonly>
+        </div>
+
+        <div class="campo">
+          <label>Faixa <span class="req">(*)</span>:</label>
+          <input value="75%" readonly>
+        </div>
+
+        <div class="dado-box">
+          <b>Tipo de Endereço:</b> RESIDENCIAL<br>
+          <b>Rua:</b> PAPA IV<br>
+          <b>Número:</b> 161<br>
+          <b>Complemento:</b><br>
+          <b>Bairro:</b> SARANDI<br>
+          <b>Cidade:</b> PORTO ALEGRE<br>
+          <b>Estado:</b> RS<br>
+          <b>CEP:</b> 945.045-010
+        </div>
+        <button class="link-acao" onclick="modalForaEscopo('Alterar Endereço')">Alterar Endereço</button>
+
+        <div class="upload">
+          <div class="rotulo">Documento de identificação e CPF: <span class="req">*</span></div>
+          <div class="dica-doc">&nbsp;</div>
+          <div class="upload-row">
+            <div class="upload-box" id="doc1"><span>Selecionar</span><span class="lixeira" onclick="removerDoc(event,'doc1')">🗑</span></div>
+            <button class="btn-quadrado" onclick="anexarDoc('doc1')" aria-label="Câmera">📷</button>
+            <button class="btn-quadrado" onclick="anexarDoc('doc1')" aria-label="Arquivos">📁</button>
+          </div>
+        </div>
+
+        <div class="upload">
+          <div class="rotulo">Comprovante de residência: <span class="req">*</span></div>
+          <div class="dica-doc">Emitido há no máximo 90 dias</div>
+          <div class="upload-row">
+            <div class="upload-box" id="doc2"><span>Selecionar</span><span class="lixeira" onclick="removerDoc(event,'doc2')">🗑</span></div>
+            <button class="btn-quadrado" onclick="anexarDoc('doc2')" aria-label="Câmera">📷</button>
+            <button class="btn-quadrado" onclick="anexarDoc('doc2')" aria-label="Arquivos">📁</button>
+          </div>
+        </div>
+
+        <div class="upload">
+          <div class="rotulo">Documento da instituição de ensino: <span class="req">*</span></div>
+          <div class="dica-doc">Autenticado pela instituição, com período letivo atual</div>
+          <div class="upload-row">
+            <div class="upload-box" id="doc3"><span>Selecionar</span><span class="lixeira" onclick="removerDoc(event,'doc3')">🗑</span></div>
+            <button class="btn-quadrado" onclick="anexarDoc('doc3')" aria-label="Câmera">📷</button>
+            <button class="btn-quadrado" onclick="anexarDoc('doc3')" aria-label="Arquivos">📁</button>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn texto" onclick="voltar()">Voltar</button>
+          <button class="btn primario" onclick="navegar('entrega')">Continuar</button>
+        </div>
+      </div>
+
+      <!-- ═══════════ VIEW: LOCAL DE ENTREGA — ETAPA 3 DE 5 (tela 5) ═══════════ -->
+      <div class="view fluxo" id="view-entrega">
+        <h2 class="titulo-pagina">Selecione o local de entrega</h2>
+        <div class="etapa-label">Etapa 3 de 5</div>
+        <div class="stepper">
+          <span class="step done"></span><span class="step done"></span><span class="step active"></span>
+          <span class="step"></span><span class="step"></span>
+        </div>
+
+        <button class="local-opcao" onclick="escolherLocal('POSTO TRIÂNGULO','AV. ASSIS BRASIL, 4320 - SARANDI, PORTO ALEGRE')">
+          <strong>Posto Triângulo</strong>
+          <small>Av. Assis Brasil, 4320 - Sarandi, Porto Alegre</small>
+        </button>
+
+        <button class="local-opcao" onclick="escolherLocal('SMDS','AV. JOÃO PESSOA, 1105 - FARROUPILHA, PORTO ALEGRE')">
+          <strong>SMDS</strong>
+          <small>Av. João Pessoa, 1105 - Farroupilha, Porto Alegre</small>
+        </button>
+
+        <button class="local-opcao" onclick="escolherEntregaEmCasa()">
+          <strong>Receber em casa</strong>
+        </button>
+
+        <div class="prazo-entrega">
+          <b>Prazo de entrega:</b>
+          <span>A partir de 3 dias úteis.</span>
+        </div>
+      </div>
+
+      <!-- ═══════════ VIEW: REVISÃO — ETAPA 4 DE 5 (tela 6) ═══════════ -->
+      <div class="view fluxo" id="view-revisao">
+        <h2 class="titulo-pagina">Revise seus dados</h2>
+        <div class="etapa-label">Etapa 4 de 5</div>
+        <div class="stepper">
+          <span class="step done"></span><span class="step done"></span><span class="step done"></span>
+          <span class="step active"></span><span class="step"></span>
+        </div>
+
+        <div class="dado-box">
+          <b>CPF:</b> 012.345.789-00<br>
+          <b>Nome:</b> GIOVANA DIAS<br>
+          <b>Data Nascimento:</b> 01/01/2008<br>
+          <b>Nome da Mãe:</b> JOANA DIAS<br><br>
+          <b>Telefone:</b> (51) 900000000<br>
+          <b>E-mail:</b> GIOVANA@EMAIL.COM<br><br>
+          <b>Escola:</b> ARTUR DA COSTA E SILVA<br>
+          <b>Nível de Ensino:</b> ENSINO MÉDIO<br>
+          <b>Renda Per Capita:</b> R$ 1.200,00<br>
+          <b>Faixa:</b> 75%<br>
+          <b>Cadastro Único:</b> NÃO<br><br>
+          <b>Tipo de Endereço:</b> RESIDENCIAL<br>
+          <b>Rua:</b> PAPA IV<br>
+          <b>Número:</b> 161<br>
+          <b>Bairro:</b> SARANDI<br>
+          <b>Cidade:</b> PORTO ALEGRE<br>
+          <b>Estado:</b> RS<br>
+          <b>CEP:</b> 945.045-010
+        </div>
+
+        <div class="rotulo-central" id="rotuloLocalSelecionado">Local de retirada selecionado</div>
+        <div class="local-card">
+          <strong id="localNome">POSTO TRIÂNGULO</strong>
+          <span id="localEndereco">AV. ASSIS BRASIL, 4320 - SARANDI, PORTO ALEGRE</span>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn texto" onclick="voltar()">Voltar</button>
+          <button class="btn primario" onclick="navegar('sucesso')">Continuar</button>
+        </div>
+      </div>
+
+      <!-- ═══════════ VIEW: SUCESSO — ETAPA 5 DE 5 (tela 7) ═══════════ -->
+      <div class="view fluxo" id="view-sucesso">
+        <h2 class="titulo-pagina">Solicitação realizada com sucesso</h2>
+        <div class="etapa-label">Etapa 5 de 5</div>
+        <div class="stepper">
+          <span class="step done"></span><span class="step done"></span><span class="step done"></span>
+          <span class="step done"></span><span class="step active"></span>
+        </div>
+
+        <div class="fib-intro">O número de sua Ficha de Inscrição de Beneficiário (FIB) é:</div>
+        <div class="fib">2568402</div>
+
+        <p class="texto-corrido">Olá! Sua solicitação do Cartão TRI - Escolar foi realizada com
+          sucesso. Agora, ela passará por avaliação da EPTC. Acompanhe o status de sua solicitação
+          acessando o menu <b>Benefícios</b>, na tela inicial, e então <b>Acompanhar Solicitação</b>.
+          O prazo de retirada no local selecionado é de 2 dias úteis <b>após avaliação e
+          aprovação</b> pela EPTC.</p>
+
+        <button class="btn azul" onclick="concluirSolicitacao()">Continuar</button>
+      </div>
+
+      <!-- ═══════════ VIEW: SITUAÇÃO DO BENEFÍCIO (acompanhamento) ═══════════ -->
+      <div class="view fluxo" id="view-situacao">
+        <h2 class="titulo-pagina">Situação do benefício escolar:</h2>
+
+        <div class="chips-demo demo-control" aria-label="Alternar estado (somente demonstração)">
+          <button class="chip ativo" id="chipAnalise" onclick="verSituacao('analise')">Em análise</button>
+          <button class="chip" id="chipRetirada" onclick="verSituacao('aprovadoRetirada')">Aprovado — retirada</button>
+          <button class="chip" id="chipEntrega" onclick="verSituacao('aprovadoEntrega')">Aprovado — entrega</button>
+        </div>
+
+        <!-- estado: em análise -->
+        <div id="sitAnalise">
+          <span class="badge-situacao badge-analise">EM ANÁLISE</span>
+          <div class="linha-central">Última atualização em: 10/06/2026</div>
+          <div class="dado-central">FIB: 2568402</div>
+          <button class="btn azul" onclick="reiniciarPrototipo()">Concluir</button>
+        </div>
+
+        <!-- estado: aprovado (retirada) -->
+        <div id="sitAprovadoRetirada" class="oculto">
+          <span class="badge-situacao badge-aprovado">APROVADO</span>
+          <div class="linha-central">Última atualização em: 10/06/2026</div>
+          <div class="dado-central">FIB: 2568580</div>
+          <div class="dado-central">Benefício válido até: 12/07/2026</div>
+          <div class="dado-central" style="margin-bottom:14px">Isenção: 50%</div>
+
+          <div class="aviso atencao">
+            <b>Seu benefício escolar está APROVADO.</b><br>
+            Para utilizar o TRI Escolar, você precisa ter um cartão ativo.
+            Clique no botão abaixo para solicitar a 2ª via do cartão.
+          </div>
+
+          <button class="btn azul" onclick="modalForaEscopo('Solicitar 2ª via do cartão')">Solicitar 2ª via do cartão</button>
+          <button class="btn azul" onclick="reiniciarPrototipo()">Concluir</button>
+        </div>
+
+        <!-- estado: aprovado (entrega em casa) -->
+        <div id="sitAprovadoEntrega" class="oculto">
+          <span class="badge-situacao badge-aprovado">APROVADO</span>
+          <div class="linha-central">Última atualização em: 10/06/2026</div>
+          <div class="dado-central">FIB: 2568580</div>
+          <div class="dado-central">Benefício válido até: 12/07/2026</div>
+          <div class="dado-central" style="margin-bottom:14px">Isenção: 50%</div>
+
+          <div class="aviso atencao">
+            Para receber o cartão em casa, é necessário realizar o <b>pagamento da taxa de
+            entrega</b>. Clique no botão abaixo para realizar o pagamento.
+          </div>
+
+          <button class="btn azul" onclick="modalForaEscopo('Realizar pagamento')">Realizar pagamento</button>
+          <button class="btn azul" onclick="reiniciarPrototipo()">Concluir</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Botão flutuante (proteger QR Code) — só na tela QR Codes -->
+    <button class="btn-lock" id="btnLock" onclick="alternarLock()" aria-label="Proteger QR Code">
+      <svg id="lockIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+    </button>
+
+    <!-- NavBar (somente na Home) -->
+    <div class="navbar" id="navbar">
+      <div class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>
+        Início
+      </div>
+      <div class="nav-item" style="cursor:pointer" onclick="abrirQrCodes()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/></svg>
+        QR Code
+      </div>
+      <div class="nav-item" style="cursor:pointer" onclick="abrirNotificacoes()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+        Avisos
+      </div>
+      <div class="nav-item" style="cursor:pointer" onclick="abrirPerfil()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/></svg>
+        Perfil
+      </div>
+    </div>
+
+    <!-- Menu lateral (réplica do app atual — à direita) -->
+    <div class="menu-fundo" id="menuFundo" onclick="fecharMenuFundo(event)">
+      <nav class="menu-lateral" aria-label="Menu">
+
+        <button class="menu-item" onclick="itemMenu('inicio')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>
+          Início
+        </button>
+
+        <button class="menu-item" onclick="itemMenu('Compra de Créditos e QRCodes')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M16 8c-.8-1.2-2.2-1.8-4-1.8-2 0-3.5 1-3.5 2.5 0 3.6 7.5 1.7 7.5 5.3 0 1.6-1.5 2.5-3.7 2.5-1.8 0-3.3-.7-4-2"/></svg>
+          Compra de Créditos e QRCodes
+        </button>
+
+        <button class="menu-item" onclick="itemMenu('Últimos Usos')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="13" rx="2"/><path d="M4 9h16"/><path d="M7 19.5v0M17 19.5v0"/><circle cx="7.5" cy="19" r="1.2"/><circle cx="16.5" cy="19" r="1.2"/></svg>
+          Últimos Usos
+        </button>
+
+        <button class="menu-item" onclick="itemMenu('Saldo')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M12 8v8"/><path d="M14.5 9.5c-.5-.8-1.4-1.2-2.5-1.2-1.3 0-2.3.7-2.3 1.7 0 2.4 5 1.1 5 3.5 0 1-1 1.7-2.5 1.7-1.2 0-2.2-.5-2.7-1.3"/></svg>
+          Saldo
+        </button>
+
+        <button class="menu-item" onclick="itemMenu('Atualização de Contato')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="17" rx="2"/><rect x="9" y="2" width="6" height="4" rx="1"/></svg>
+          Atualização de Contato
+        </button>
+
+        <button class="menu-item" onclick="itemMenu('Cancelar Cartão')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>
+          Cancelar Cartão
+        </button>
+
+        <button class="menu-item" onclick="itemMenu('Consultar Pedidos')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h16l-1.5 10a2 2 0 0 1-2 1.7h-9A2 2 0 0 1 5.5 19L4 9z"/><path d="M8 9l2.5-5M16 9l-2.5-5"/><path d="M9.5 13v4M12 13v4M14.5 13v4"/></svg>
+          Consultar Pedidos
+        </button>
+
+        <button class="menu-item" onclick="itemMenu('escolar')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2 9l10 5 10-5-10-5z"/><path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/></svg>
+          Escolar
+        </button>
+
+        <button class="menu-item" onclick="itemMenu('Biometria')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5.6 9.5A7 7 0 0 1 12 5c2.8 0 5.2 1.6 6.4 4"/><path d="M8.5 12a3.5 3.5 0 0 1 7 0c0 2.5.6 4.5 1.5 6"/><path d="M12 12v3a7 7 0 0 0 1 3.5"/></svg>
+          Biometria
+        </button>
+
+        <button class="menu-item" onclick="itemMenu('Ajuda')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.4 2.3c-.7.3-.9.7-.9 1.7"/><path d="M12 17h.01"/></svg>
+          Ajuda
+        </button>
+
+        <button class="menu-item" onclick="itemMenu('Sobre')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg>
+          Sobre
+        </button>
+
+        <button class="menu-item sair" onclick="sair()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l-5-5 5-5"/><path d="M5 12h11"/></svg>
+          Sair
+        </button>
+
+      </nav>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-fundo" id="modalFundo" role="dialog" aria-modal="true">
+      <div class="modal">
+        <h3 id="modalTitulo">Título</h3>
+        <p id="modalTexto">Mensagem</p>
+        <div class="btn-row">
+          <button class="btn secundario oculto" id="modalBotaoSec">Não</button>
+          <button class="btn primario" id="modalBotao" onclick="fecharModal()">Entendi</button>
+        </div>
+      </div>
+    </div>
+
+  </div></div>
+
+  <!-- ════════════════ ANOTAÇÕES ════════════════ -->
+  <div class="notes">
+    <label class="demo-control" style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-secondary);margin-bottom:6px;cursor:pointer">
+      <input type="checkbox" id="togglePossuiCartao"> Simular: usuário já possui cartão
+    </label>
+
+    <h2>Módulos — regras a definir</h2>
+
+    <div class="note" style="border-left-color:#475569">
+      <span class="mod-cor" style="background:#475569"></span><b>Login</b>
+      <div class="mod-regra">Regra: <i>a descrever</i></div>
+    </div>
+
+    <div class="note" style="border-left-color:#273285">
+      <span class="mod-cor" style="background:#273285"></span><b>Home</b>
+      <div class="mod-regra">Regra: <i>a descrever</i></div>
+    </div>
+
+    <div class="note" style="border-left-color:#F5802C">
+      <span class="mod-cor" style="background:#F5802C"></span><b>Solicitar Cartão</b>
+      <div class="mod-regra">Banner "Solicite seu cartão" → se já possui cartão, vai ao menu Cartões; senão, tela Solicitar Cartão. <i>Demais regras a descrever.</i></div>
+    </div>
+
+    <div class="note" style="border-left-color:#FAA831">
+      <span class="mod-cor" style="background:#FAA831"></span><b>Recarga</b>
+      <div class="mod-regra">Regra: <i>a descrever</i></div>
+    </div>
+
+    <div class="note" style="border-left-color:#CB58A0">
+      <span class="mod-cor" style="background:#CB58A0"></span><b>QR Code</b>
+      <div class="mod-regra">Regra: <i>a descrever</i></div>
+    </div>
+
+    <div class="note" style="border-left-color:#0563E8">
+      <span class="mod-cor" style="background:#0563E8"></span><b>Pedidos</b>
+      <div class="mod-regra">Regra: <i>a descrever</i></div>
+    </div>
+
+    <div class="note" style="border-left-color:#00AFEF">
+      <span class="mod-cor" style="background:#00AFEF"></span><b>Cartões</b>
+      <div class="mod-regra">Regra: <i>a descrever</i></div>
+    </div>
+
+    <div class="note" style="border-left-color:#3FB54A">
+      <span class="mod-cor" style="background:#3FB54A"></span><b>Extrato</b>
+      <div class="mod-regra">Regra: <i>a descrever</i></div>
+    </div>
+
+    <div class="note" style="border-left-color:#7C3AED">
+      <span class="mod-cor" style="background:#7C3AED"></span><b>Benefício Escolar</b>
+      <div class="mod-regra">Regra: <i>a descrever</i></div>
+    </div>
+
+    <div class="note" style="border-left-color:#0045A6">
+      <span class="mod-cor" style="background:#0045A6"></span><b>Benefício TRI Idoso</b>
+      <div class="mod-regra">Perfil → validação do documento (RG/CNH) → biometria facial com liveness → envio da solicitação. <i>Demais regras a descrever.</i></div>
+    </div>
+
+    <div class="note" style="border-left-color:#189A9A">
+      <span class="mod-cor" style="background:#189A9A"></span><b>Menu lateral</b>
+      <div class="mod-regra">Regra: <i>a descrever</i></div>
+    </div>
+
+    <div class="note" style="border-left-color:#5B5BD6">
+      <span class="mod-cor" style="background:#5B5BD6"></span><b>Notificações</b>
+      <div class="mod-regra">Regra: <i>a descrever</i></div>
+    </div>
+
+    <div class="note" style="border-left-color:#64748B">
+      <span class="mod-cor" style="background:#64748B"></span><b>Perfil</b>
+      <div class="mod-regra">Regra: <i>a descrever</i></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── navegação entre views ──
+  const pilha = ['login'];
+  const titulos = {
+    perfis: 'Solicitar Benefício',
+    recargaTipo: 'Recarga', recargaValor: 'Recarga',
+    recargaPagamento: 'Recarga', recargaPedido: 'Pedido',
+    qrcodes: 'QR Codes TRI', qrViajar: 'Passagem Avulsa', qrTipo: 'Passagem Avulsa',
+    qrQtd: 'Passagem Avulsa', qrPagamento: 'Passagem Avulsa',
+    pedidos: 'Pedidos', pedidoDetalhe: 'Detalhe',
+    login: 'Login', solicitarCartao: 'Solicitar Cartão', perfil: 'Perfil',
+    cartoes: 'Meus cartões', cartaoDetalhe: 'Meus cartões',
+    cancelarCartao: 'Cancelar cartão', cancelamentoConfirmacao: 'Confirmação',
+    viaRetirada: 'Solicitar Cartão', viaEndereco: 'Solicitar Cartão',
+    viaCadastroEndereco: 'Cadastro', viaAviso: 'Solicitar Cartão',
+    viaSucesso: 'Solicitar Cartão', viaPagamento: 'Pagamento',
+    idosoDocumento: 'TRI Idoso', idosoBiometria: 'TRI Idoso',
+    idosoValidacao: 'TRI Idoso', idosoSucesso: 'TRI Idoso',
+    extrato: 'Extrato', notificacoes: 'Notificações',
+    escolar: 'Escolar', informacoes: 'Escolar', foto: 'Escolar', cadastro: 'Escolar',
+    entrega: 'Escolar', revisao: 'Escolar', sucesso: 'Escolar', situacao: 'Escolar'
+  };
+  let entregaEmCasa = false;
+  let estadoSituacao = 'analise';
+
+  function viewAtual(){ return pilha[pilha.length - 1]; }
+
+  function atualizarChrome(){
+    const v = viewAtual();
+    const ehHome = v === 'home';
+    const ehLogin = v === 'login';
+    document.getElementById('appbarHome').style.display = ehHome ? 'flex' : 'none';
+    document.getElementById('appbarFluxo').style.display = (!ehHome && !ehLogin) ? 'flex' : 'none';
+    document.getElementById('navbar').style.display = ehHome ? 'flex' : 'none';
+    if (!ehHome && !ehLogin) document.getElementById('tituloFluxo').textContent = titulos[v] || 'Escolar';
+  }
+
+  function mostrarView(id){
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + id).classList.add('active');
+    document.querySelector('.content').scrollTo({top:0});
+    document.getElementById('btnLock').style.display = (id === 'qrcodes') ? 'flex' : 'none';
+    atualizarChrome();
+  }
+
+  function navegar(id){
+    if (viewAtual() !== id) pilha.push(id);
+    mostrarView(id);
+  }
+
+  function voltar(){
+    if (pilha.length <= 1) return;
+    pilha.pop();
+    mostrarView(viewAtual());
+  }
+
+  // ── etapa 1: foto ──
+  function tirarFoto(){
+    document.getElementById('fotoCirculo').classList.add('capturada');
+    document.getElementById('fotoPlaceholder').textContent = '🙂';
+    document.getElementById('btnContinuarFoto').disabled = false;
+  }
+
+  // ── etapa 2: documentos ──
+  function anexarDoc(id){
+    const box = document.getElementById(id);
+    box.classList.add('anexado');
+    box.querySelector('span').textContent = '✓ Documento anexado';
+  }
+
+  function removerDoc(ev, id){
+    ev.stopPropagation();
+    const box = document.getElementById(id);
+    box.classList.remove('anexado');
+    box.querySelector('span').textContent = 'Selecionar';
+  }
+
+  // ── etapa 3: local de entrega ──
+  function escolherLocal(nome, endereco){
+    entregaEmCasa = false;
+    document.getElementById('rotuloLocalSelecionado').textContent = 'Local de retirada selecionado';
+    document.getElementById('localNome').textContent = nome;
+    document.getElementById('localEndereco').textContent = endereco;
+    navegar('revisao');
+  }
+
+  function escolherEntregaEmCasa(){
+    mostrarModal('Receber em casa',
+      'O envio do cartão terá uma cobrança no valor de R$ 11,90. Deseja prosseguir?');
+    const btn = document.getElementById('modalBotao');
+    const btnSec = document.getElementById('modalBotaoSec');
+    btn.textContent = 'Sim';
+    btnSec.classList.remove('oculto');
+    btnSec.textContent = 'Não';
+    btnSec.onclick = fecharModal;
+    btn.onclick = () => {
+      fecharModal();
+      entregaEmCasa = true;
+      document.getElementById('rotuloLocalSelecionado').textContent = 'Entrega selecionada';
+      document.getElementById('localNome').textContent = 'RECEBER EM CASA';
+      document.getElementById('localEndereco').textContent = 'RUA PAPA IV, 161 - SARANDI, PORTO ALEGRE';
+      navegar('revisao');
+    };
+  }
+
+  // ── etapa 5 → acompanhamento ──
+  function concluirSolicitacao(){
+    if (entregaEmCasa){
+      mostrarModal('IMPORTANTE!',
+        'Após a aprovação do benefício escolar, você deverá acessar a tela de acompanhamento do benefício para realizar o pagamento da taxa de entrega.');
+      const btn = document.getElementById('modalBotao');
+      btn.textContent = 'Entendi';
+      btn.onclick = () => {
+        fecharModal();
+        verSituacao('analise');
+        navegar('situacao');
+      };
+      return;
+    }
+    verSituacao('analise');
+    navegar('situacao');
+  }
+
+  // ── situação do benefício (chips de demonstração) ──
+  function verSituacao(estado){
+    estadoSituacao = estado;
+    document.getElementById('sitAnalise').classList.toggle('oculto', estado !== 'analise');
+    document.getElementById('sitAprovadoRetirada').classList.toggle('oculto', estado !== 'aprovadoRetirada');
+    document.getElementById('sitAprovadoEntrega').classList.toggle('oculto', estado !== 'aprovadoEntrega');
+    document.getElementById('chipAnalise').classList.toggle('ativo', estado === 'analise');
+    document.getElementById('chipRetirada').classList.toggle('ativo', estado === 'aprovadoRetirada');
+    document.getElementById('chipEntrega').classList.toggle('ativo', estado === 'aprovadoEntrega');
+  }
+
+  // ── reset ──
+  function reiniciarPrototipo(){
+    pilha.splice(0, pilha.length, 'home');
+    entregaEmCasa = false;
+    document.getElementById('fotoCirculo').classList.remove('capturada');
+    document.getElementById('fotoPlaceholder').textContent = '👤';
+    document.getElementById('btnContinuarFoto').disabled = true;
+    ['doc1','doc2','doc3'].forEach(id => {
+      const box = document.getElementById(id);
+      box.classList.remove('anexado');
+      box.querySelector('span').textContent = 'Selecionar';
+    });
+    verSituacao('analise');
+    resetarIdoso();
+    mostrarView('home');
+  }
+
+  // ── modal ──
+  function mostrarModal(titulo, texto){
+    document.getElementById('modalTitulo').textContent = titulo;
+    document.getElementById('modalTexto').textContent = texto;
+    document.getElementById('modalFundo').classList.add('ativo');
+  }
+
+  function modalForaEscopo(nome){
+    mostrarModal(nome, 'Tela fora do escopo deste protótipo. O foco desta versão é a nova Home (v1.1) e o fluxo do benefício escolar.');
+  }
+
+  function perfilIndisponivel(nome){
+    mostrarModal('Perfil indisponível',
+      'O perfil ' + nome + ' será liberado em breve.');
+  }
+
+  // ── fluxo TRI Idoso: documento (RG/CNH) → biometria facial com liveness ──
+  let tipoDocIdosoSel = 'RG';
+  let livenessRodando = false;
+
+  function iniciarIdoso(){
+    resetarIdoso();
+    navegar('idosoDocumento');
+  }
+
+  function tipoDocIdoso(botao, tipo){
+    tipoDocIdosoSel = tipo;
+    document.querySelectorAll('#view-idosoDocumento .opcao-doc').forEach(o => {
+      o.classList.remove('selecionada');
+      o.querySelector('.check').textContent = '';
+    });
+    botao.classList.add('selecionada');
+    botao.querySelector('.check').textContent = '✓';
+  }
+
+  function capturarDocIdoso(){
+    document.getElementById('cameraDocIdoso').classList.add('capturada');
+    document.getElementById('cameraDocIdosoTexto').textContent =
+      tipoDocIdosoSel + ' capturado com sucesso. Confira se os dados estão legíveis antes de continuar.';
+    document.getElementById('btnCapturarDocIdoso').classList.add('oculto');
+    document.getElementById('btnIrBiometria').classList.remove('oculto');
+  }
+
+  function iniciarLiveness(){
+    if (livenessRodando) return;
+    livenessRodando = true;
+    const btn = document.getElementById('btnLiveness');
+    btn.disabled = true;
+    btn.textContent = 'Analisando...';
+    const passos = ['liv1', 'liv2', 'liv3', 'liv4'];
+    let i = 0;
+    document.getElementById('liv1').classList.add('ativo');
+    const intervalo = setInterval(() => {
+      const li = document.getElementById(passos[i]);
+      li.classList.remove('ativo');
+      li.classList.add('feito');
+      i++;
+      if (i < passos.length){
+        document.getElementById(passos[i]).classList.add('ativo');
+        document.getElementById('cameraBioIdosoTexto').textContent =
+          document.getElementById(passos[i]).textContent.trim();
+      } else {
+        clearInterval(intervalo);
+        document.getElementById('cameraBioIdoso').classList.add('capturada');
+        document.getElementById('cameraBioIdosoTexto').textContent = 'Prova de vida concluída!';
+        setTimeout(() => {
+          livenessRodando = false;
+          btn.disabled = false;
+          btn.textContent = 'Iniciar prova de vida';
+          navegar('idosoValidacao');
+        }, 900);
+      }
+    }, 700);
+  }
+
+  function resetarIdoso(){
+    tipoDocIdosoSel = 'RG';
+    livenessRodando = false;
+    const camDoc = document.getElementById('cameraDocIdoso');
+    camDoc.classList.remove('capturada');
+    document.getElementById('cameraDocIdosoTexto').textContent =
+      'Posicione o documento em local iluminado, sem cortes e sem reflexos.';
+    document.getElementById('btnCapturarDocIdoso').classList.remove('oculto');
+    document.getElementById('btnIrBiometria').classList.add('oculto');
+    document.querySelectorAll('#view-idosoDocumento .opcao-doc').forEach((o, idx) => {
+      o.classList.toggle('selecionada', idx === 0);
+      o.querySelector('.check').textContent = idx === 0 ? '✓' : '';
+    });
+    document.getElementById('cameraBioIdoso').classList.remove('capturada');
+    document.getElementById('cameraBioIdosoTexto').textContent =
+      'Olhe para a câmera, retire óculos escuros e mantenha o rosto bem iluminado.';
+    ['liv1','liv2','liv3','liv4'].forEach(id => {
+      document.getElementById(id).classList.remove('ativo', 'feito');
+    });
+    const btn = document.getElementById('btnLiveness');
+    btn.disabled = false;
+    btn.textContent = 'Iniciar prova de vida';
+  }
+
+  // ── menu lateral (réplica do app atual — à direita) ──
+  function abrirMenu(){
+    document.getElementById('menuFundo').classList.add('ativo');
+  }
+
+  function fecharMenu(){
+    document.getElementById('menuFundo').classList.remove('ativo');
+  }
+
+  function fecharMenuFundo(ev){
+    if (ev.target === document.getElementById('menuFundo')) fecharMenu();
+  }
+
+  function itemMenu(opcao){
+    fecharMenu();
+    if (opcao === 'inicio') return;
+    if (opcao === 'escolar'){ navegar('escolar'); return; }
+    if (opcao === 'Compra de Créditos e QRCodes'){ navegar('recargaTipo'); return; }
+    if (opcao === 'Consultar Pedidos'){ abrirPedidos(); return; }
+    if (opcao === 'Cancelar Cartão'){ abrirCartoes(); return; }
+    if (opcao === 'Saldo' || opcao === 'Últimos Usos'){ abrirExtrato(); return; }
+    modalForaEscopo(opcao);
+  }
+
+  // ── módulo recarga (réplica do app atual; 1ª tela adaptada) ──
+  // número do cartão e limites ILUSTRATIVOS — confirmar com a área responsável
+  const abreviacaoProduto = { 'Passagem Antecipada': 'P. A.', 'Vale Transporte': 'V. T.', 'Escolar': 'Escolar' };
+  const recargaMinima = 20, recargaMaxima = 1440;
+  let tipoRecarga = null;
+  let valorRecarga = 0;
+
+  function brl(v){ return 'R$ ' + v.toFixed(2).replace('.', ','); }
+
+  function selecionarRecarga(tipo){
+    tipoRecarga = tipo;
+    valorRecarga = 0;
+    document.getElementById('produtoLabel').textContent = 'Produto ' + (abreviacaoProduto[tipo] || tipo);
+    document.getElementById('valorLivre').value = '';
+    navegar('recargaValor');
+  }
+
+  function escolherValor(v){
+    valorRecarga = v;
+    irPagamento();
+  }
+
+  function confirmarValorLivre(){
+    const texto = document.getElementById('valorLivre').value.replace(/[R$\s.]/g, '').replace(',', '.');
+    const v = parseFloat(texto);
+    if (!v || isNaN(v)){
+      mostrarModal('Valor inválido', 'Informe o valor da recarga ou escolha uma das opções.');
+      return;
+    }
+    if (v < recargaMinima || v > recargaMaxima){
+      mostrarModal('Valor fora do limite', 'A recarga deve ser de no mínimo R$ 20,00 e no máximo R$ 1.440,00.');
+      return;
+    }
+    valorRecarga = v;
+    irPagamento();
+  }
+
+  // taxas por forma de pagamento — PIX e Cartão vêm da referência; Boleto é ILUSTRATIVO
+  const taxasPgto = { pix: 0, credito: 1.00, boleto: 2.50 };
+
+  function irPagamento(){
+    document.getElementById('produtoLabelPag').textContent =
+      'Produto ' + (abreviacaoProduto[tipoRecarga] || tipoRecarga);
+    document.getElementById('totalPix').textContent = brl(valorRecarga + taxasPgto.pix);
+    document.getElementById('totalCredito').textContent = brl(valorRecarga + taxasPgto.credito);
+    document.getElementById('totalBoleto').textContent = brl(valorRecarga + taxasPgto.boleto);
+    navegar('recargaPagamento');
+  }
+
+  function pagar(metodo){
+    if (metodo === 'pix'){
+      document.getElementById('valorPedido').textContent = brl(valorRecarga + taxasPgto.pix);
+      navegar('recargaPedido');
+      return;
+    }
+    // Cartão de Crédito e Boleto: telas específicas ainda a replicar
+    const nome = metodo === 'credito' ? 'Cartão de Crédito' : 'Boleto';
+    modalForaEscopo('Pagamento por ' + nome);
+  }
+
+  function copiarChave(){
+    const btn = document.getElementById('btnCopiarChave');
+    btn.textContent = 'Chave copiada ✓';
+    setTimeout(() => { btn.textContent = 'Copiar chave'; }, 1500);
+  }
+
+  function retornarMenu(){
+    pilha.splice(0, pilha.length, 'home');
+    tipoRecarga = null;
+    valorRecarga = 0;
+    document.getElementById('valorLivre').value = '';
+    resetarQr();
+    mostrarView('home');
+  }
+
+  // ── módulo QR Codes (réplica do app atual; 1ª tela com botão de compra) ──
+  // tarifa da passagem avulsa ILUSTRATIVA — confirmar com a área responsável
+  const tarifaQrAvulsa = 5.30;
+  let qtdQr = 0;
+
+  function abrirQrCodes(){
+    mostrarTabQr('disponiveis');
+    navegar('qrcodes');
+  }
+
+  function mostrarTabQr(aba){
+    const disp = aba === 'disponiveis';
+    document.getElementById('qrListaDisp').classList.toggle('oculto', !disp);
+    document.getElementById('qrListaUtil').classList.toggle('oculto', disp);
+    document.getElementById('qrTabDisp').classList.toggle('ativa', disp);
+    document.getElementById('qrTabUtil').classList.toggle('ativa', !disp);
+  }
+
+  function alternarLock(){
+    const card = document.getElementById('qrCardDisp');
+    const protegido = card.classList.toggle('protegido');
+    document.getElementById('lockIcon').innerHTML = protegido
+      ? '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7-1.3"/>'
+      : '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>';
+  }
+
+  function escolherQtdQr(n, btn){
+    qtdQr = n;
+    document.querySelectorAll('#numGridQr .num-btn').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+    document.getElementById('qtdQrLabel').textContent = n;
+    document.getElementById('totalQrLabel').textContent = brl(n * tarifaQrAvulsa);
+    document.getElementById('btnAvancarQr').disabled = n === 0;
+  }
+
+  function irPagamentoQr(){
+    const base = qtdQr * tarifaQrAvulsa;
+    document.getElementById('qtdQrPag').textContent = qtdQr;
+    document.getElementById('totalQrPix').textContent = brl(base + taxasPgto.pix);
+    document.getElementById('totalQrCredito').textContent = brl(base + taxasPgto.credito);
+    document.getElementById('totalQrBoleto').textContent = brl(base + taxasPgto.boleto);
+    navegar('qrPagamento');
+  }
+
+  function pagarQr(metodo){
+    if (metodo === 'pix'){
+      document.getElementById('valorPedido').textContent = brl(qtdQr * tarifaQrAvulsa + taxasPgto.pix);
+      navegar('recargaPedido');
+      return;
+    }
+    const nome = metodo === 'credito' ? 'Cartão de Crédito' : 'Boleto';
+    modalForaEscopo('Pagamento por ' + nome);
+  }
+
+  function resetarQr(){
+    qtdQr = 0;
+    document.querySelectorAll('#numGridQr .num-btn').forEach(b => b.classList.remove('sel'));
+    document.getElementById('qtdQrLabel').textContent = '0';
+    document.getElementById('totalQrLabel').textContent = brl(0);
+    document.getElementById('btnAvancarQr').disabled = true;
+    mostrarTabQr('disponiveis');
+  }
+
+  // ── módulo Pedidos (réplica do app atual) ──
+  // dados ILUSTRATIVOS — valores múltiplos da tarifa avulsa (R$ 5,30)
+  const dadosPedido = {
+    '27994157': { data: '11/06/2026 11:33', valor: 26.50, qtd: 5, situacao: 'Aguardando Confirmação', estado: 'aberto' },
+    '26238426': { data: '10/03/2026 09:42', valor: 26.50, qtd: 5, situacao: 'Liberado',                estado: 'pago' },
+    '22855607': { data: '07/08/2025 16:51', valor: 5.30,  qtd: 1, situacao: 'Liberado',                estado: 'pago' },
+    '27479345': { data: '15/05/2026 10:05', valor: 5.30,  qtd: 1, situacao: 'Excluído',                estado: 'cancelado' },
+    '27254632': { data: '04/05/2026 16:26', valor: 26.50, qtd: 5, situacao: 'Excluído',                estado: 'cancelado' },
+    '26154683': { data: '05/03/2026 14:17', valor: 10.60, qtd: 2, situacao: 'Excluído',                estado: 'cancelado' }
+  };
+  let valorPedidoAberto = 0;
+
+  function abrirPedidos(){
+    mostrarTabPedidos('aberto');
+    navegar('pedidos');
+  }
+
+  function mostrarTabPedidos(aba){
+    ['aberto', 'pagos', 'cancelados'].forEach(t => {
+      document.getElementById('ped-lista-' + t).classList.toggle('oculto', t !== aba);
+      document.getElementById('ped-tab-' + t).classList.toggle('ativa', t === aba);
+    });
+  }
+
+  function abrirDetalhe(num){
+    const p = dadosPedido[num];
+    document.getElementById('detNum').textContent = 'Pedido: ' + num;
+    document.getElementById('detData').textContent = p.data;
+    document.getElementById('detValor').textContent = brl(p.valor);
+    document.getElementById('detSituacao').textContent = p.situacao;
+    document.getElementById('detQtd').textContent =
+      brl(p.valor) + ' (' + p.qtd + (p.qtd > 1 ? ' QRCODES)' : ' QRCODE)');
+    document.getElementById('detTotal').textContent = brl(p.valor);
+    document.getElementById('detAcoes').style.display = (p.estado === 'aberto') ? 'flex' : 'none';
+    valorPedidoAberto = p.valor;
+    navegar('pedidoDetalhe');
+  }
+
+  function pagarPedido(){
+    document.getElementById('valorPedido').textContent = brl(valorPedidoAberto);
+    navegar('recargaPedido');
+  }
+
+  // ── módulo Cartões (réplica do app atual) ──
+  const cartoes = {
+    '51-9': { num: '98.03.000000051-9', status: 'ativo',      visual: 'azul',
+              tipos: 'TRI - VALE TRANSPORTE / TRI - PASSAGEM ANTECIPADA' },
+    '49-1': { num: '98.03.000000049-1', status: 'cancelado', visual: 'escolar',
+              tipos: 'TRI - PASSAGEM ESCOLAR / TRI - PASSAGEM ANTECIPADA' }
+  };
+  let cartaoAtual = null;
+
+  // contexto da tela "Meus cartões": 'gestao' (cancelar / 2ª via) ou 'extrato' (saldo)
+  let contextoCartao = 'gestao';
+
+  function aplicarContextoCartoes(){
+    // no Extrato, exibir apenas os cartões ativos
+    document.querySelectorAll('.cartao-item.cancelado-item').forEach(el => {
+      el.style.display = (contextoCartao === 'extrato') ? 'none' : '';
+    });
+  }
+
+  function abrirCartoes(){ contextoCartao = 'gestao'; aplicarContextoCartoes(); navegar('cartoes'); }
+
+  // banner "Solicite seu cartão": se o usuário já possui cartão, vai primeiro ao
+  // menu de cartões; se não tem (sem Passe Antecipado), vai à tela Solicitar Cartão
+  let possuiCartao = false;
+  function solicitarCartao(){
+    if (possuiCartao) { abrirCartoes(); return; }
+    navegar('solicitarCartao');
+  }
+
+  // Extrato passa primeiro pela seleção do cartão (Meus cartões, só ativos)
+  function abrirExtrato(){ contextoCartao = 'extrato'; aplicarContextoCartoes(); navegar('cartoes'); }
+
+  function abrirNotificacoes(){ navegar('notificacoes'); }
+
+  function abrirPerfil(){ navegar('perfil'); }
+
+  // ── login (entrada do app) ──
+  function entrar(){
+    pilha.splice(0, pilha.length, 'home');
+    mostrarView('home');
+  }
+
+  function toggleSenha(){
+    const i = document.getElementById('loginSenha');
+    i.type = (i.type === 'password') ? 'text' : 'password';
+  }
+
+  // sair: desloga e volta para o login
+  function sair(){
+    fecharMenu();
+    document.getElementById('loginSenha').value = '';
+    pilha.splice(0, pilha.length, 'login');
+    mostrarView('login');
+  }
+
+  function selecionarCartao(id){
+    if (contextoCartao === 'extrato'){ mostrarExtrato(id); return; }
+    abrirCartao(id);
+  }
+
+  // (neste protótipo só o cartão ativo possui saldo)
+  function mostrarExtrato(id){ navegar('extrato'); }
+
+  function abrirCartao(id){
+    const c = cartoes[id];
+    cartaoAtual = id;
+    document.getElementById('detCartaoVisual').className = 'cartao-visual ' + c.visual;
+    document.getElementById('detCartaoVisual').style.marginTop = '6px';
+    document.getElementById('detFoto').style.display = (c.visual === 'escolar') ? 'flex' : 'none';
+    document.getElementById('detLegenda').textContent =
+      (c.visual === 'escolar') ? 'Passagem Escolar' : 'Transporte Integrado';
+    const badge = document.getElementById('detCartaoBadge');
+    badge.textContent = (c.status === 'ativo') ? 'ATIVO' : 'Cancelado';
+    badge.className = 'cartao-badge ' + c.status;
+    document.getElementById('detCartaoNum').textContent = c.num;
+    document.getElementById('detCartaoTipos').textContent = c.tipos;
+    // ações: cartão ativo permite cancelar; cancelado só solicita 2ª via
+    const ativo = c.status === 'ativo';
+    document.getElementById('btn2viaLabel').textContent =
+      ativo ? 'Cancelar / Solicitar 2ª via de cartão' : 'Solicitar 2ª via do cartão';
+    document.getElementById('btnCancelarCartao').style.display = ativo ? 'flex' : 'none';
+    navegar('cartaoDetalhe');
+  }
+
+  // modal de confirmação Sim/Não reutilizável
+  function modalConfirmar(titulo, texto, aoConfirmar){
+    mostrarModal(titulo, texto);
+    const btn = document.getElementById('modalBotao');
+    const btnSec = document.getElementById('modalBotaoSec');
+    btn.textContent = 'Sim';
+    btnSec.classList.remove('oculto');
+    btnSec.textContent = 'Não';
+    btnSec.onclick = fecharModal;
+    btn.onclick = () => { fecharModal(); aoConfirmar(); };
+  }
+
+  // ── fluxo de cancelamento de cartão (motivo → atenção → confirmação → 2ª via) ──
+  let motivoCancelamento = '';
+  let cancelamentoComSegundaVia = false; // true quando veio do botão "Cancelar / Solicitar 2ª via"
+
+  function cancelarCartao(){
+    cancelamentoComSegundaVia = false;   // botão "Cancelar cartão": só cancela (2ª via é opcional ao final)
+    navegar('cancelarCartao');
+  }
+
+  function selecionarMotivo(motivo){
+    motivoCancelamento = motivo;
+    mostrarModal('Atenção',
+      'O cancelamento é um procedimento irreversível e ocorrerá em até 30 minutos nos ônibus de Porto Alegre. Nas estações, o cancelamento ocorre em até 24h.');
+    const btn = document.getElementById('modalBotao');
+    const btnSec = document.getElementById('modalBotaoSec');
+    btn.textContent = 'Confirmar';
+    btnSec.classList.remove('oculto');
+    btnSec.textContent = 'Cancelar';
+    btnSec.onclick = fecharModal;
+    btn.onclick = () => { fecharModal(); confirmarCancelamento(); };
+  }
+
+  function confirmarCancelamento(){
+    document.getElementById('protocoloCancelamento').textContent = '01727357778';
+    navegar('cancelamentoConfirmacao');
+  }
+
+  function finalizarCancelamento(){
+    // veio do "Cancelar / Solicitar 2ª via": o usuário já quer a nova via — vai direto, sem perguntar
+    if (cancelamentoComSegundaVia) { iniciar2via(); return; }
+    // veio do "Cancelar cartão": oferece a 2ª via
+    mostrarModal('Solicitar 2ª via', 'Você gostaria de solicitar a 2ª via do cartão?');
+    const btn = document.getElementById('modalBotao');
+    const btnSec = document.getElementById('modalBotaoSec');
+    btn.textContent = 'Sim';
+    btnSec.classList.remove('oculto');
+    btnSec.textContent = 'Não';
+    btnSec.onclick = () => { fecharModal(); reiniciarPrototipo(); };
+    btn.onclick = () => { fecharModal(); iniciar2via(); };
+  }
+
+  function solicitar2via(){
+    // botão "Cancelar / Solicitar 2ª via": cancelar primeiro, depois a 2ª via (sem perguntar ao final).
+    // Se o cartão já está cancelado, não há o que cancelar — vai direto à solicitação da 2ª via.
+    if (cartoes[cartaoAtual].status === 'ativo') {
+      cancelamentoComSegundaVia = true;
+      navegar('cancelarCartao');
+    } else {
+      iniciar2via();
+    }
+  }
+
+  // ── fluxo de solicitação de 2ª via (juntado ao cancelamento) ──
+  function modalConfirmarLabels(titulo, texto, simLabel, naoLabel, aoConfirmar){
+    mostrarModal(titulo, texto);
+    const btn = document.getElementById('modalBotao');
+    const btnSec = document.getElementById('modalBotaoSec');
+    btn.textContent = simLabel;
+    btnSec.classList.remove('oculto');
+    btnSec.textContent = naoLabel;
+    btnSec.onclick = fecharModal;
+    btn.onclick = () => { fecharModal(); aoConfirmar(); };
+  }
+
+  function iniciar2via(){
+    document.getElementById('viaEnderecoEntrega').classList.add('oculto');
+    navegar('viaRetirada');
+  }
+
+  function retirada2via(endereco){
+    modalConfirmarLabels('Retirada do cartão',
+      'Você optou por retirar o cartão no endereço: ' + endereco +
+      '. O novo cartão terá um custo de R$ 11,90. Deseja prosseguir?',
+      'Sim', 'Não', () => navegar('viaAviso'));
+  }
+
+  function entrega2viaCasa(){
+    modalConfirmarLabels('Receber em casa',
+      'O envio do cartão terá uma cobrança no valor de R$ 11,90 pago exclusivamente por PIX. Você deseja prosseguir?',
+      'Sim', 'Não', () => navegar('viaEndereco'));
+  }
+
+  function selecionarEndereco2via(endereco){
+    modalConfirmarLabels('Endereço selecionado',
+      'Você selecionou o endereço: ' + endereco + '.',
+      'Confirmar', 'Cancelar', () => navegar('viaAviso'));
+  }
+
+  function salvarEndereco2via(){
+    mostrarModal('Cadastro de Endereço', 'Cadastro realizado com sucesso!');
+    const btn = document.getElementById('modalBotao');
+    btn.textContent = 'OK';
+    btn.onclick = () => {
+      fecharModal();
+      document.getElementById('viaEnderecoEntrega').classList.remove('oculto');
+      voltar(); // volta à seleção de endereço, agora com o endereço de entrega cadastrado
+    };
+  }
+
+  // QR Code ilustrativo (padrão determinístico — apenas visual)
+  function qrSvg(semente, px){
+    const n = 21, cel = 9;
+    let s = semente;
+    const rnd = () => { s = (s * 1103515245 + 12345) % 2147483648; return s / 2147483648; };
+    let r = '';
+    for (let lin = 0; lin < n; lin++){
+      for (let col = 0; col < n; col++){
+        const finder = (lin < 7 && col < 7) || (lin < 7 && col >= n - 7) || (lin >= n - 7 && col < 7);
+        if (!finder && rnd() < 0.45) r += '<rect x="' + (col*cel) + '" y="' + (lin*cel) + '" width="' + cel + '" height="' + cel + '" fill="#1F2430"/>';
+      }
+    }
+    const olho = (x, y) =>
+      '<rect x="' + (x*cel) + '" y="' + (y*cel) + '" width="' + (7*cel) + '" height="' + (7*cel) + '" fill="#1F2430"/>' +
+      '<rect x="' + ((x+1)*cel) + '" y="' + ((y+1)*cel) + '" width="' + (5*cel) + '" height="' + (5*cel) + '" fill="#FFFFFF"/>' +
+      '<rect x="' + ((x+2)*cel) + '" y="' + ((y+2)*cel) + '" width="' + (3*cel) + '" height="' + (3*cel) + '" fill="#1F2430"/>';
+    r += olho(0,0) + olho(n-7,0) + olho(0,n-7);
+    return '<svg viewBox="0 0 ' + (n*cel) + ' ' + (n*cel) + '" width="' + px + '" height="' + px + '" xmlns="http://www.w3.org/2000/svg">' + r + '</svg>';
+  }
+  (function preencherQrs(){
+    const f = document.getElementById('qrFake'); if (f) f.innerHTML = qrSvg(42, 185);
+    const d = document.getElementById('qrMiniDisp'); if (d) d.innerHTML = qrSvg(77, 76);
+    const u = document.getElementById('qrMiniUtil'); if (u) u.innerHTML = qrSvg(91, 76);
+    const cv = document.getElementById('qrFakeVia'); if (cv) cv.innerHTML = qrSvg(55, 185);
+  })();
+
+  function fecharModal(){
+    document.getElementById('modalFundo').classList.remove('ativo');
+    const btn = document.getElementById('modalBotao');
+    const btnSec = document.getElementById('modalBotaoSec');
+    btn.textContent = 'Entendi';
+    btn.onclick = fecharModal;
+    btnSec.classList.add('oculto');
+  }
+
+  document.getElementById('toggle').addEventListener('change', function(){
+    document.body.classList.toggle('clean', !this.checked);
+  });
+
+  // controle de demonstração: alterna se o usuário já possui cartão (afeta o banner)
+  document.getElementById('togglePossuiCartao').addEventListener('change', function(){
+    possuiCartao = this.checked;
+  });
+
+  // estado inicial: aplica o chrome correto da tela ativa (login, sem appbar/navbar)
+  atualizarChrome();
+</script>
+</body>
+</html>

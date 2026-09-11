@@ -1,0 +1,2669 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APP TRI — Protótipo Navegável · Home v1.1 + Benefício Escolar</title>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+     PROTÓTIPO APP TRI — estrutura MVC
+     • VIEW ........ este arquivo (marcação das telas, um bloco por view)
+     • ESTILO ...... css/ em camadas (1-tokens → 2-layout → 3-componentes → 4-modulos)
+     • MODELO ...... js/modelos/dados.js (dados e regras ilustrativas)
+     • CONTROLE .... js/controladores/*.js (um por módulo)
+     • NÚCLEO ...... js/nucleo/ (roteador, modal, formato)
+     Os onclick chamam a fachada global definida em js/app.js.
+     ══════════════════════════════════════════════════════════════════════ -->
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Roboto:wght@400;700&family=Open+Sans+Condensed:wght@700&display=swap"
+    rel="stylesheet">
+
+  <link rel="stylesheet" href="css/1-tokens.css">
+  <link rel="stylesheet" href="css/2-layout.css">
+  <link rel="stylesheet" href="css/3-componentes.css">
+  <link rel="stylesheet" href="css/4-modulos.css">
+</head>
+
+<body>
+
+  <div class="page-head">
+    <h1>APP TRI · Protótipo Navegável — Home v1.1 + Benefício Escolar &nbsp;<span
+        style="font-weight:400;color:#97999B">Junho 2026</span></h1>
+    <label><input type="checkbox" id="toggle" checked> Escopo</label>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ════════════════ TELA ════════════════ -->
+    <div class="phone">
+      <div class="screen" id="telaApp">
+
+        <div class="statusbar">
+          <span>9:41</span>
+          <span style="display:flex;gap:5px;align-items:center">
+            <svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor">
+              <rect x="0" y="7" width="3" height="4" rx="1" />
+              <rect x="4.5" y="4.5" width="3" height="6.5" rx="1" />
+              <rect x="9" y="2" width="3" height="9" rx="1" />
+              <rect x="13" y="0" width="3" height="11" rx="1" opacity=".35" />
+            </svg>
+            <svg width="22" height="11" viewBox="0 0 24 12" fill="none">
+              <rect x=".5" y=".5" width="20" height="11" rx="3" stroke="currentColor" opacity=".4" />
+              <rect x="2" y="2" width="14" height="8" rx="1.5" fill="currentColor" />
+              <path d="M22.5 4v4c1-.3 1.5-1 1.5-2s-.5-1.7-1.5-2z" fill="currentColor" opacity=".4" />
+            </svg>
+          </span>
+        </div>
+
+        <!-- AppBar da Home -->
+        <div class="appbar" id="appbarHome">
+          <img class="logo" src="./assets/icons/logo_tri.svg" alt="TRI">
+          <div class="spacer"></div>
+          <svg class="bell" style="cursor:pointer" onclick="abrirNotificacoes()" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+          </svg>
+          <div class="who">
+            <div class="hi">Bom dia,</div>
+            <div class="name">Gabriel</div>
+          </div>
+          <div class="avatar" onclick="abrirMenu()" role="button" aria-label="Abrir menu">GD</div>
+        </div>
+
+        <!-- AppBar do fluxo: voltar + título central + início (réplica do app atual) -->
+        <div class="appbar-flow" id="appbarFluxo">
+          <button class="icone-btn" onclick="voltar()" aria-label="Voltar">‹</button>
+          <div class="titulo-fluxo" id="tituloFluxo">Escolar</div>
+          <button class="icone-btn" onclick="reiniciarPrototipo()" aria-label="Início">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M3 10.5 12 3l9 7.5" />
+              <path d="M5 9.5V21h14V9.5" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="content">
+
+          <!-- ═══════════ VIEW: LOGIN (entrada do app) ═══════════ -->
+          <div class="view active" id="view-login">
+            <div class="login-form">
+              <div class="login-logo"><img src="./assets/icons/logo_tri.svg" alt="TRI Transporte Integrado"></div>
+              <div class="login-titulo">Acesse sua conta</div>
+
+              <div class="login-campo">
+                <label>CPF ou usuário</label>
+                <input id="loginUsuario" placeholder="Digite seu CPF" inputmode="numeric">
+              </div>
+
+              <div class="login-campo">
+                <label>Senha</label>
+                <div class="input-senha">
+                  <input id="loginSenha" type="password" placeholder="Sua senha">
+                  <button type="button" onclick="toggleSenha()" aria-label="Mostrar/ocultar senha">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div class="login-esqueci"><a onclick="modalForaEscopo('Recuperação de Senha')">Esqueci minha senha</a>
+              </div>
+
+              <button class="btn primario" onclick="entrar()">Entrar</button>
+              <button class="btn contorno" onclick="modalForaEscopo('Cadastro')">Cadastre-se</button>
+            </div>
+
+            <!-- propaganda Tri GPS no rodapé -->
+            <div class="banner-gps promo">
+              <h3>Acompanhe seu ônibus em tempo real.</h3>
+              <div class="gps-label">TRI GPS</div>
+              <button class="cta cta-glass" onclick="modalForaEscopo('Tri GPS')">Acesse o Tri GPS <span
+                  class="arr">➜</span></button>
+              <img src="./assets/images/banner_gps.png" alt="Tri GPS">
+            </div>
+          </div>
+
+          <!-- ═══════════ VIEW: HOME (v1.1) ═══════════ -->
+          <div class="view" id="view-home">
+
+            <div class="banner-cartao">
+              <h3>Você ainda não tem um cartão TRI?</h3>
+              <button class="cta cta-amber" onclick="solicitarCartao()">Solicite agora seu cartão <span
+                  class="arr">➜</span></button>
+              <img src="./assets/images/banner_cartao2.png" alt="Cartão TRI">
+            </div>
+
+            <div class="banner-gps">
+              <h3>Acompanhe seu ônibus em tempo real.</h3>
+              <div class="gps-label">TRI GPS</div>
+              <button class="cta cta-glass" onclick="modalForaEscopo('Tri GPS')">Acesse o Tri GPS <span
+                  class="arr">➜</span></button>
+              <img src="./assets/images/banner_gps.png" alt="Tri GPS">
+            </div>
+
+            <div class="section-title">Ações rápidas</div>
+            <div class="grid">
+
+              <button class="card" onclick="navegar('recargaTipo')">
+                <img src="./assets/icons/ic_recarga.png" alt="">
+                <div class="label">Recarga</div>
+                <div class="desc">Adicione créditos ao seu cartão.</div>
+              </button>
+
+              <button class="card" onclick="abrirQrCodes()">
+                <img src="./assets/icons/ic_qrcode.png" alt="">
+                <div class="label">QR Code</div>
+                <div class="desc">Compre e use QR Codes avulsos.</div>
+              </button>
+
+              <button class="card" onclick="abrirPedidos()">
+                <img src="./assets/icons/ic_pedidos.png" alt="">
+                <div class="label">Pedidos</div>
+                <div class="desc">Acompanhe seus pedidos de recarga.</div>
+              </button>
+
+              <button class="card" onclick="abrirCartoes()">
+                <img src="./assets/icons/ic_cartoes.png" alt="">
+                <div class="label">Cartões</div>
+                <div class="desc">Gerencie seus cartões, ativos ou cancelados.</div>
+              </button>
+
+              <button class="card" onclick="abrirExtrato()">
+                <img src="./assets/icons/ic_extrato.png" alt="">
+                <div class="label">Extrato</div>
+                <div class="desc">Consulte os últimos usos e o saldo do seu cartão.</div>
+              </button>
+
+              <button class="card novo-item" onclick="navegar('perfis')">
+                <img src="./assets/icons/ic_beneficios.png" alt="">
+                <div class="label">Benefícios</div>
+                <div class="desc">Solicite o benefício escolar.</div>
+              </button>
+
+            </div>
+
+            <div class="tip">
+              <div class="ico">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <path d="M9 18h6" />
+                  <path d="M10 22h4" />
+                  <path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.4 1 2.3h6c0-.9.4-1.8 1-2.3A7 7 0 0 0 12 2z" />
+                </svg>
+              </div>
+              <div>
+                <h4>Dica</h4>
+                <p>Fez uma recarga? Os créditos são carregados no validador pelo
+                  <span class="hl">sinal 4G do coletivo</span> e podem levar
+                  <span class="hl">cerca de 30 min</span> para ficar disponíveis após a
+                  confirmação do pagamento.
+                </p>
+              </div>
+            </div>
+            <div class="footnote">*O tempo pode variar conforme a disponibilidade de sinal no veículo.</div>
+
+          </div>
+
+          <!-- ═══════════ RECARGA: TIPO (1ª tela, adaptada: cartões em vez do QRCode) ═══════════ -->
+          <div class="view fluxo" id="view-recargaTipo">
+            <h2 class="titulo-grande">Qual tipo de passagem deseja comprar?</h2>
+
+            <button class="cartao-mini mini-antecipada" onclick="selecionarRecarga('Passagem Antecipada')">
+              <span class="chip-mini" aria-hidden="true"></span>
+              <span class="marca" aria-hidden="true">tri</span>
+              <span class="nome">Passagem Antecipada</span>
+            </button>
+
+            <button class="cartao-mini mini-vale" onclick="selecionarRecarga('Vale Transporte')">
+              <span class="chip-mini" aria-hidden="true"></span>
+              <span class="marca" aria-hidden="true">tri</span>
+              <span class="nome">Vale Transporte</span>
+            </button>
+
+            <button class="cartao-mini mini-escolar" onclick="selecionarRecarga('Escolar')">
+              <span class="chip-mini" aria-hidden="true"></span>
+              <span class="marca" aria-hidden="true">tri</span>
+              <span class="nome">Escolar</span>
+            </button>
+          </div>
+
+          <!-- ═══════════ RECARGA: VALOR ═══════════ -->
+          <div class="view fluxo" id="view-recargaValor">
+            <h2 class="titulo-grande">Qual o valor da recarga?</h2>
+
+            <div class="info-produto">
+              <div class="prod" id="produtoLabel">Produto P. A.</div>
+              <div class="linha">Cartão 98.04.02038765-6</div>
+              <div class="mini">Recarga mínima R$ 20,00</div>
+              <div class="mini">Recarga máxima R$ 1.440,00</div>
+            </div>
+
+            <button class="btn-valor" onclick="escolherValor(20)">R$ 20,00</button>
+            <button class="btn-valor" onclick="escolherValor(50)">R$ 50,00</button>
+            <button class="btn-valor" onclick="escolherValor(100)">R$ 100,00</button>
+
+            <div class="input-valor">
+              <input id="valorLivre" placeholder="R$ 0,00" inputmode="decimal" aria-label="Valor da recarga">
+              <button class="ir" onclick="confirmarValorLivre()" aria-label="Avançar">›</button>
+            </div>
+          </div>
+
+          <!-- ═══════════ RECARGA: PAGAMENTO ═══════════ -->
+          <div class="view fluxo" id="view-recargaPagamento">
+            <h2 class="titulo-grande">Qual a forma de pagamento?</h2>
+
+            <div class="info-produto">
+              <div class="prod" id="produtoLabelPag">Produto P. A.</div>
+              <div class="linha">Cartão 98.04.02038765-6</div>
+              <div class="mini">Recarga mínima R$ 20,00</div>
+              <div class="mini">Recarga máxima R$ 1.440,00</div>
+            </div>
+
+            <!-- PIX -->
+            <div class="metodo-pgto">
+              <span class="metodo-logo" aria-hidden="true">
+                <svg viewBox="0 0 48 48">
+                  <g fill="#32BCAD">
+                    <rect x="14" y="14" width="20" height="20" rx="5" transform="rotate(45 24 24)" />
+                  </g>
+                  <circle cx="39" cy="10" r="2.6" fill="#32BCAD" />
+                </svg>
+              </span>
+              <div class="metodo-txt">
+                <div class="metodo-nome">PIX</div>
+                <div class="metodo-valores">Taxa <b>R$ 0,00</b><br>Valor Total <b id="totalPix">R$ 0,00</b></div>
+              </div>
+              <button class="btn azul" onclick="pagar('pix')">Pagar</button>
+            </div>
+
+            <!-- Cartão de Crédito -->
+            <div class="metodo-pgto">
+              <span class="metodo-logo" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.8" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <rect x="2.5" y="5" width="19" height="14" rx="2.5" />
+                  <path d="M2.5 9.5h19" />
+                  <path d="M6 15h4" />
+                </svg>
+              </span>
+              <div class="metodo-txt">
+                <div class="metodo-nome">Cartão de Crédito</div>
+                <div class="metodo-valores">Taxa <b>R$ 1,00</b><br>Valor Total <b id="totalCredito">R$ 0,00</b></div>
+              </div>
+              <button class="btn azul" onclick="pagar('credito')">Pagar</button>
+            </div>
+
+            <!-- Boleto -->
+            <div class="metodo-pgto">
+              <span class="metodo-logo" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.6" stroke-linecap="round">
+                  <path d="M4 5v14M7 5v14M10 5v14M13.5 5v14M17 5v14M20 5v14" opacity=".9" />
+                </svg>
+              </span>
+              <div class="metodo-txt">
+                <div class="metodo-nome">Boleto</div>
+                <div class="metodo-valores">Taxa <b>R$ 2,50</b><br>Valor Total <b id="totalBoleto">R$ 0,00</b></div>
+              </div>
+              <button class="btn azul" onclick="pagar('boleto')">Pagar</button>
+            </div>
+
+            <p class="nota-uso">Recarga em 30 minutos nos ônibus de Porto Alegre (eventualmente o prazo pode variar) ao
+              aproximar o cartão no validador do ônibus.</p>
+          </div>
+
+          <!-- ═══════════ RECARGA: PEDIDO (PIX) — compartilhado com QR/Pedidos ═══════════ -->
+          <div class="view fluxo" id="view-recargaPedido">
+            <div class="pix-logo" style="margin-top:6px">
+              <svg width="36" height="36" viewBox="0 0 48 48" aria-hidden="true">
+                <g fill="#32BCAD">
+                  <rect x="13" y="13" width="22" height="22" rx="6" transform="rotate(45 24 24)" />
+                </g>
+                <circle cx="40" cy="9" r="3" fill="#32BCAD" />
+              </svg>
+              <div class="letras" style="font-size:24px">pix<small>powered by <b>Banco Central</b></small></div>
+            </div>
+
+            <div class="qr-fake" id="qrFake" aria-label="QR Code PIX (ilustrativo)"></div>
+
+            <div class="valor-central">Número do pedido: 27994157</div>
+            <div class="valor-central" style="font-size:17px;margin:4px 0 14px">Valor: <span id="valorPedido">R$
+                0,00</span></div>
+
+            <div class="pill-expira">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 7v5l3 2" />
+              </svg>
+              Expira em: 11/06/2026 12:03
+            </div>
+
+            <button class="btn azul" id="btnCopiarChave" onclick="copiarChave()">Copiar chave</button>
+
+            <div class="chave-box"><span>00020101021226850014br.gov.bcb.pix2563qrcode.tri...</span><b>›</b></div>
+
+            <div class="opcoes-pix">
+              <div class="tit">Você pode fazer uma das opções:</div>
+              <p>Copie e cole a chave PIX no campo "PIX copia e cola" no app do seu banco.</p>
+              <div class="divisor-ou">OU</div>
+              <p>Escaneie o Qr Code acima no app do seu banco.</p>
+            </div>
+
+            <button class="btn-contorno" style="margin-top:16px" onclick="retornarMenu()">← Retornar ao menu</button>
+          </div>
+
+          <!-- ═══════════ QR CODES TRI (lista) ═══════════ -->
+          <div class="view fluxo" id="view-qrcodes">
+
+            <!-- botão de compra (acima do aviso "Exibindo dados on-line") -->
+            <button class="qr-comprar" onclick="navegar('qrViajar')">
+              <span class="ico-qr" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+                  <rect x="3" y="3" width="7" height="7" rx="1" />
+                  <rect x="14" y="3" width="7" height="7" rx="1" />
+                  <rect x="3" y="14" width="7" height="7" rx="1" />
+                  <path d="M14 14h3v3h-3zM18 18h3v3h-3z" />
+                </svg>
+              </span>
+              <span class="txt">
+                <strong>Passagem Avulsa QRCode</strong>
+                <span>Compre uma nova passagem avulsa.</span>
+              </span>
+              <span class="mais" aria-hidden="true">+</span>
+            </button>
+
+            <span class="badge-online">Exibindo dados on-line</span>
+
+            <div class="qr-tabs">
+              <button class="qr-tab ativa" id="qrTabDisp" onclick="mostrarTabQr('disponiveis')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+                  <rect x="3" y="3" width="7" height="7" rx="1" />
+                  <rect x="14" y="3" width="7" height="7" rx="1" />
+                  <rect x="3" y="14" width="7" height="7" rx="1" />
+                  <path d="M14 14h3v3h-3zM18 18h3v3h-3z" />
+                </svg>
+                Disponíveis
+              </button>
+              <button class="qr-tab" id="qrTabUtil" onclick="mostrarTabQr('utilizados')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <rect x="3" y="3" width="8" height="8" rx="1" />
+                  <rect x="13" y="3" width="8" height="8" rx="1" />
+                  <rect x="3" y="13" width="8" height="8" rx="1" />
+                  <path d="m13.5 17 2 2 4-4" />
+                </svg>
+                Utilizados
+              </button>
+            </div>
+
+            <!-- aba Disponíveis -->
+            <div id="qrListaDisp">
+              <div class="qr-card" id="qrCardDisp">
+                <div class="dados">
+                  <div class="rotulo">Uso liberado em:</div>
+                  <div class="destaque">10/03/2026 09:42</div>
+                  <div class="ref">QRCODE Nº 22895357</div>
+                  <div class="ref">PEDIDO Nº 26238426</div>
+                </div>
+                <div class="qr-mini" id="qrMiniDisp" aria-hidden="true"></div>
+              </div>
+            </div>
+
+            <!-- aba Utilizados -->
+            <div id="qrListaUtil" class="oculto">
+              <div class="qr-card">
+                <div class="dados">
+                  <div class="rotulo">Uso liberado em:</div>
+                  <div class="destaque">01/08/2025 17:57</div>
+                  <div class="rotulo">Usado em:</div>
+                  <div class="destaque">07/08/2025 18:26</div>
+                  <div class="ref">QRCODE Nº 13836787</div>
+                  <div class="ref">PEDIDO Nº 0</div>
+                </div>
+                <div class="qr-mini" id="qrMiniUtil" aria-hidden="true"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══════════ QR: COMO VOCÊ IRÁ VIAJAR? ═══════════ -->
+          <div class="view fluxo" id="view-qrViajar">
+            <h2 class="titulo-grande">Como você irá viajar?</h2>
+            <button class="opcao-ilustrada" onclick="navegar('qrTipo')">
+              <span class="bus-art" aria-hidden="true">
+                <svg viewBox="0 0 200 92" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="10" y="14" width="180" height="52" rx="14" fill="#C7CDD6" />
+                  <rect x="22" y="23" width="150" height="22" rx="6" fill="#A9DED6" />
+                  <line x1="60" y1="23" x2="60" y2="45" stroke="#C7CDD6" stroke-width="3" />
+                  <line x1="98" y1="23" x2="98" y2="45" stroke="#C7CDD6" stroke-width="3" />
+                  <line x1="136" y1="23" x2="136" y2="45" stroke="#C7CDD6" stroke-width="3" />
+                  <rect x="14" y="52" width="172" height="6" fill="#9AA1AD" />
+                  <rect x="180" y="26" width="8" height="20" rx="2" fill="#E04A4A" />
+                  <circle cx="56" cy="68" r="12" fill="#3A3F4A" />
+                  <circle cx="56" cy="68" r="5" fill="#C7CDD6" />
+                  <circle cx="150" cy="68" r="12" fill="#3A3F4A" />
+                  <circle cx="150" cy="68" r="5" fill="#C7CDD6" />
+                </svg>
+              </span>
+              <span class="legenda-ilustrada">Exclusivo Ônibus Porto<br>Alegre</span>
+            </button>
+          </div>
+
+          <!-- ═══════════ QR: TIPO DE PASSAGEM ═══════════ -->
+          <div class="view fluxo" id="view-qrTipo">
+            <h2 class="titulo-grande">Qual tipo de passagem deseja comprar?</h2>
+            <button class="opcao-ilustrada" onclick="navegar('qrQtd')">
+              <span class="ico-qr-grande" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                  <rect x="3" y="3" width="7" height="7" rx="1" />
+                  <rect x="14" y="3" width="7" height="7" rx="1" />
+                  <rect x="3" y="14" width="7" height="7" rx="1" />
+                  <path d="M14 14h3v3h-3zM18 18h3v3h-3z" />
+                </svg>
+              </span>
+              <span class="legenda-ilustrada">Passagem Avulsa<br>QRCode</span>
+            </button>
+          </div>
+
+          <!-- ═══════════ QR: QUANTIDADE DE PASSAGENS AVULSAS ═══════════ -->
+          <div class="view fluxo" id="view-qrQtd">
+            <h2 class="titulo-grande">Quantas Passagens Avulsas QRCode você deseja comprar?</h2>
+
+            <div class="num-grid" id="numGridQr">
+              <button class="num-btn" onclick="escolherQtdQr(1,this)">1</button>
+              <button class="num-btn" onclick="escolherQtdQr(2,this)">2</button>
+              <button class="num-btn" onclick="escolherQtdQr(3,this)">3</button>
+              <button class="num-btn" onclick="escolherQtdQr(4,this)">4</button>
+              <button class="num-btn" onclick="escolherQtdQr(5,this)">5</button>
+              <button class="num-btn" onclick="escolherQtdQr(6,this)">6</button>
+              <button class="num-btn" onclick="escolherQtdQr(7,this)">7</button>
+              <button class="num-btn" onclick="escolherQtdQr(8,this)">8</button>
+              <button class="num-btn" onclick="escolherQtdQr(9,this)">9</button>
+              <button class="num-btn dez" onclick="escolherQtdQr(10,this)">10</button>
+            </div>
+
+            <div class="resumo-laranja">
+              Quantidade desejada: <span id="qtdQrLabel">0</span><br>
+              <b>Resumo do pedido: <span id="totalQrLabel">R$ 0,00</span></b>
+            </div>
+
+            <button class="btn primario" id="btnAvancarQr" onclick="irPagamentoQr()" disabled>Avançar</button>
+          </div>
+
+          <!-- ═══════════ QR: PAGAMENTO ═══════════ -->
+          <div class="view fluxo" id="view-qrPagamento">
+            <h2 class="titulo-grande">Qual a forma de pagamento?</h2>
+
+            <div class="info-produto">
+              <div class="prod">Passagem Avulsa QRCode</div>
+              <div class="linha">Quantidade: <span id="qtdQrPag">0</span></div>
+              <div class="mini">Disponível para uso em até 30 minutos.</div>
+            </div>
+
+            <!-- PIX -->
+            <div class="metodo-pgto">
+              <span class="metodo-logo" aria-hidden="true">
+                <svg viewBox="0 0 48 48">
+                  <g fill="#32BCAD">
+                    <rect x="14" y="14" width="20" height="20" rx="5" transform="rotate(45 24 24)" />
+                  </g>
+                  <circle cx="39" cy="10" r="2.6" fill="#32BCAD" />
+                </svg>
+              </span>
+              <div class="metodo-txt">
+                <div class="metodo-nome">PIX</div>
+                <div class="metodo-valores">Taxa <b>R$ 0,00</b><br>Valor Total <b id="totalQrPix">R$ 0,00</b></div>
+              </div>
+              <button class="btn azul" onclick="pagarQr('pix')">Pagar</button>
+            </div>
+
+            <!-- Cartão de Crédito -->
+            <div class="metodo-pgto">
+              <span class="metodo-logo" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.8" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <rect x="2.5" y="5" width="19" height="14" rx="2.5" />
+                  <path d="M2.5 9.5h19" />
+                  <path d="M6 15h4" />
+                </svg>
+              </span>
+              <div class="metodo-txt">
+                <div class="metodo-nome">Cartão de Crédito</div>
+                <div class="metodo-valores">Taxa <b>R$ 1,00</b><br>Valor Total <b id="totalQrCredito">R$ 0,00</b></div>
+              </div>
+              <button class="btn azul" onclick="pagarQr('credito')">Pagar</button>
+            </div>
+
+            <!-- Boleto -->
+            <div class="metodo-pgto">
+              <span class="metodo-logo" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.6" stroke-linecap="round">
+                  <path d="M4 5v14M7 5v14M10 5v14M13.5 5v14M17 5v14M20 5v14" opacity=".9" />
+                </svg>
+              </span>
+              <div class="metodo-txt">
+                <div class="metodo-nome">Boleto</div>
+                <div class="metodo-valores">Taxa <b>R$ 2,50</b><br>Valor Total <b id="totalQrBoleto">R$ 0,00</b></div>
+              </div>
+              <button class="btn azul" onclick="pagarQr('boleto')">Pagar</button>
+            </div>
+
+            <p class="nota-uso">Disponível para o uso em até 30 minutos nos ônibus de Porto Alegre.</p>
+          </div>
+
+          <!-- ═══════════ PEDIDOS (lista com abas) ═══════════ -->
+          <div class="view fluxo" id="view-pedidos">
+            <div class="pedidos-tabs">
+              <button class="ped-tab ativa" id="ped-tab-aberto" onclick="mostrarTabPedidos('aberto')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                  <path d="M4 6h16M4 12h16M4 18h10" />
+                </svg>
+                Em aberto
+              </button>
+              <button class="ped-tab" id="ped-tab-pagos" onclick="mostrarTabPedidos('pagos')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3z" />
+                  <path d="M9 8h6M9 12h6" />
+                </svg>
+                Pagos
+              </button>
+              <button class="ped-tab" id="ped-tab-cancelados" onclick="mostrarTabPedidos('cancelados')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <rect x="4" y="4" width="16" height="16" rx="2" />
+                  <path d="M9 9l6 6M15 9l-6 6" />
+                </svg>
+                Cancelados
+              </button>
+            </div>
+
+            <!-- Em aberto -->
+            <div id="ped-lista-aberto">
+              <div class="pedido-card">
+                <div class="num">27994157</div>
+                <div class="produto">QRCODE POA</div>
+                <div class="data">Data da solicitação: 11/06/2026 11:33</div>
+                <span class="pedido-badge aberto">Aguardando Confirmação</span>
+                <button class="btn-detalhe" onclick="abrirDetalhe('27994157')">Detalhe</button>
+              </div>
+            </div>
+
+            <!-- Pagos -->
+            <div id="ped-lista-pagos" class="oculto">
+              <div class="pedido-card">
+                <div class="num">26238426</div>
+                <div class="produto">QRCODE POA</div>
+                <div class="data">Data da solicitação: 10/03/2026 09:42</div>
+                <span class="pedido-badge pago">Liberado</span>
+                <button class="btn-detalhe" onclick="abrirDetalhe('26238426')">Detalhe</button>
+              </div>
+              <div class="pedido-card">
+                <div class="num">22855607</div>
+                <div class="produto">QRCODE POA</div>
+                <div class="data">Data da solicitação: 07/08/2025 16:51</div>
+                <span class="pedido-badge pago">Liberado</span>
+                <button class="btn-detalhe" onclick="abrirDetalhe('22855607')">Detalhe</button>
+              </div>
+            </div>
+
+            <!-- Cancelados -->
+            <div id="ped-lista-cancelados" class="oculto">
+              <div class="pedido-card">
+                <div class="num">27479345</div>
+                <div class="produto">QRCODE POA</div>
+                <div class="data">Data da solicitação: 15/05/2026 10:05</div>
+                <span class="pedido-badge excluido">Excluído</span>
+                <button class="btn-detalhe" onclick="abrirDetalhe('27479345')">Detalhe</button>
+              </div>
+              <div class="pedido-card">
+                <div class="num">27254632</div>
+                <div class="produto">QRCODE POA</div>
+                <div class="data">Data da solicitação: 04/05/2026 16:26</div>
+                <span class="pedido-badge excluido">Excluído</span>
+                <button class="btn-detalhe" onclick="abrirDetalhe('27254632')">Detalhe</button>
+              </div>
+              <div class="pedido-card">
+                <div class="num">26154683</div>
+                <div class="produto">QRCODE POA</div>
+                <div class="data">Data da solicitação: 05/03/2026 14:17</div>
+                <span class="pedido-badge excluido">Excluído</span>
+                <button class="btn-detalhe" onclick="abrirDetalhe('26154683')">Detalhe</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══════════ PEDIDO — DETALHE ═══════════ -->
+          <div class="view fluxo" id="view-pedidoDetalhe">
+            <div class="detalhe-card">
+              <div class="detalhe-topo">
+                <div class="pnum" id="detNum">Pedido: 27994157</div>
+                <div class="pprod">Produto: QR Code TRI</div>
+              </div>
+              <div class="detalhe-corpo">
+                <div class="detalhe-linha">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <rect x="3" y="4.5" width="18" height="16" rx="2" />
+                    <path d="M3 9h18M8 2.5v4M16 2.5v4" />
+                  </svg>
+                  <span>Data da solicitação: <span id="detData"></span></span>
+                </div>
+                <div class="detalhe-linha">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="9" />
+                    <path
+                      d="M14.5 9c-.5-.8-1.4-1.2-2.5-1.2-1.3 0-2.3.7-2.3 1.7 0 2.4 5 1.1 5 3.5 0 1-1 1.7-2.5 1.7-1.2 0-2.2-.5-2.7-1.3M12 6.5v11" />
+                  </svg>
+                  <span>Valor do pedido: <span id="detValor"></span></span>
+                </div>
+                <div class="detalhe-linha">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="M12 11v5" />
+                    <path d="M12 8h.01" />
+                  </svg>
+                  <span>Situação: <span id="detSituacao"></span></span>
+                </div>
+                <div class="detalhe-linha titulo">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                    <path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01" />
+                  </svg>
+                  <span>Resumo do Pedido:</span>
+                </div>
+                <div class="detalhe-linha">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M12 3 2 20h20L12 3z" />
+                    <path d="M12 10v4M12 17h.01" />
+                  </svg>
+                  <span>Saldo devedor: R$ 0,00</span>
+                </div>
+                <div class="detalhe-linha">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path
+                      d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4V8z" />
+                    <path d="M14 6v12" stroke-dasharray="2 2" />
+                  </svg>
+                  <span>Quantidade de passagens: <span id="detQtd"></span></span>
+                </div>
+                <div class="detalhe-linha">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <rect x="4" y="3" width="16" height="18" rx="2" />
+                    <path d="M8 7h8M8 12h2M12 12h2M8 16h2M12 16h2" />
+                  </svg>
+                  <span>Total do pedido: <span id="detTotal"></span></span>
+                </div>
+                <div class="detalhe-acoes" id="detAcoes">
+                  <button class="btn azul" onclick="pagarPedido()">Pagar</button>
+                  <button class="btn aguarde" disabled>Aguarde 307s</button>
+                </div>
+              </div>
+            </div>
+            <div class="nota-loja">Para mais informações de usos, somente na Loja Central do TRI.</div>
+          </div>
+
+          <!-- ═══════════ NOTIFICAÇÕES ═══════════ -->
+          <div class="view fluxo" id="view-notificacoes">
+            <div class="notif-card">
+              <h4>Dica de verão!</h4>
+              <p>Saiba quais ônibus têm ar-condicionado pelo app TRI GPS. Basta selecionar a
+                linha desejada e se possui o ícone *.</p>
+              <div class="data">15/01/2026 18:46</div>
+            </div>
+
+            <div class="notif-card">
+              <h4>Aviso!</h4>
+              <p>Nossas linhas estão indisponíveis, Call center temporariamente inoperante.
+                Precisando dos nossos serviços acesse www.tripoa.net.br ou app do cartão TRI.</p>
+              <div class="data">04/12/2025 15:07</div>
+            </div>
+
+            <div class="notif-card">
+              <h4>Atenção!</h4>
+              <p>Hoje é o último dia de atendimento na Av. João Pessoa 1105. A partir de 27/10
+                o TRI atenderá no Lg Visconde do Cairú 10!</p>
+              <div class="data">24/10/2025 16:25</div>
+            </div>
+
+            <div class="notif-card">
+              <h4>Atenção!</h4>
+              <p>O serviço de telefonia do TRI está inoperante no momento. Para informações,
+                cancelamento de cartão e pedido de segunda via acesse www.tripoa.net.br, app TRI
+                ou tente mais tarde.</p>
+              <div class="data">11/03/2025 15:09</div>
+            </div>
+          </div>
+
+          <!-- ═══════════ EXTRATO (Saldo + Últimos usos) ═══════════ -->
+          <div class="view fluxo" id="view-extrato">
+            <div class="saldo-card">
+              <div class="cartao-ref">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <rect x="2.5" y="5" width="19" height="14" rx="2.5" />
+                  <path d="M2.5 9.5h19" />
+                  <path d="M6 15h4" />
+                </svg>
+                Cartão 98.03.000000051-9
+              </div>
+              <div class="saldo-label">Saldo disponível</div>
+              <div class="saldo-valor">R$ 24,80</div>
+              <div class="saldo-breakdown">
+                <div class="item">
+                  <div class="t">Vale Transporte</div>
+                  <div class="v">R$ 14,80</div>
+                </div>
+                <div class="item">
+                  <div class="t">Pass. Antecipada</div>
+                  <div class="v">R$ 10,00</div>
+                </div>
+              </div>
+              <div class="saldo-atualizado">Atualizado em 12/06/2026 11:33</div>
+            </div>
+
+            <div class="extrato-secao">Últimos usos</div>
+
+            <div class="uso-item">
+              <span class="uso-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="4" y="3.5" width="16" height="13" rx="2" />
+                  <path d="M4 10h16" />
+                  <path d="M7 16.5v2.5M17 16.5v2.5" />
+                  <circle cx="8" cy="13.2" r="1" />
+                  <circle cx="16" cy="13.2" r="1" />
+                </svg></span>
+              <div class="uso-info">
+                <div class="uso-linha">Linha 281 — Campo Novo / Centro</div>
+                <div class="uso-meta">11/06/2026 18:42 · Vale Transporte</div>
+              </div>
+              <div class="uso-valor">- R$ 5,30</div>
+            </div>
+
+            <div class="uso-item">
+              <span class="uso-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="4" y="3.5" width="16" height="13" rx="2" />
+                  <path d="M4 10h16" />
+                  <path d="M7 16.5v2.5M17 16.5v2.5" />
+                  <circle cx="8" cy="13.2" r="1" />
+                  <circle cx="16" cy="13.2" r="1" />
+                </svg></span>
+              <div class="uso-info">
+                <div class="uso-linha">Linha T11 — Triângulo / Centro</div>
+                <div class="uso-meta">11/06/2026 08:14 · Vale Transporte</div>
+              </div>
+              <div class="uso-valor">- R$ 5,30</div>
+            </div>
+
+            <div class="uso-item">
+              <span class="uso-ico credito" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 16V8M8.5 11.5 12 8l3.5 3.5" />
+                </svg></span>
+              <div class="uso-info">
+                <div class="uso-linha">Recarga via PIX</div>
+                <div class="uso-meta">10/06/2026 19:05 · Crédito adicionado</div>
+              </div>
+              <div class="uso-valor credito">+ R$ 20,00</div>
+            </div>
+
+            <div class="uso-item">
+              <span class="uso-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="4" y="3.5" width="16" height="13" rx="2" />
+                  <path d="M4 10h16" />
+                  <path d="M7 16.5v2.5M17 16.5v2.5" />
+                  <circle cx="8" cy="13.2" r="1" />
+                  <circle cx="16" cy="13.2" r="1" />
+                </svg></span>
+              <div class="uso-info">
+                <div class="uso-linha">Linha 343 — Protásio Alves</div>
+                <div class="uso-meta">09/06/2026 17:50 · Passagem Antecipada</div>
+              </div>
+              <div class="uso-valor">- R$ 5,30</div>
+            </div>
+
+            <div class="uso-item">
+              <span class="uso-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="4" y="3.5" width="16" height="13" rx="2" />
+                  <path d="M4 10h16" />
+                  <path d="M7 16.5v2.5M17 16.5v2.5" />
+                  <circle cx="8" cy="13.2" r="1" />
+                  <circle cx="16" cy="13.2" r="1" />
+                </svg></span>
+              <div class="uso-info">
+                <div class="uso-linha">Linha B43 — Lomba do Pinheiro</div>
+                <div class="uso-meta">08/06/2026 07:33 · Vale Transporte</div>
+              </div>
+              <div class="uso-valor">- R$ 5,30</div>
+            </div>
+          </div>
+
+          <!-- ═══════════ PERFIL ═══════════ -->
+          <div class="view fluxo" id="view-perfil">
+            <div class="perfil-topo">
+              <div class="perfil-avatar">GD</div>
+              <div class="perfil-id">
+                <div class="nome">Giovana Dias</div>
+                <div class="dado">CPF: ***.***.*89-00</div>
+                <div class="dado">giovana@email.com</div>
+              </div>
+            </div>
+
+            <div class="perfil-secao">Conta</div>
+
+            <button class="perfil-opcao" onclick="modalForaEscopo('Dados pessoais')">
+              <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="8" r="4" />
+                  <path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5" />
+                </svg></span>
+              <span class="txt"><strong>Dados pessoais</strong><span>Nome, CPF e data de nascimento</span></span>
+              <span class="seta">›</span>
+            </button>
+
+            <button class="perfil-opcao" onclick="modalForaEscopo('Atualização de Contato')">
+              <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="5" width="18" height="14" rx="2" />
+                  <path d="m3 7 9 6 9-6" />
+                </svg></span>
+              <span class="txt"><strong>Atualização de contato</strong><span>E-mail e telefone</span></span>
+              <span class="seta">›</span>
+            </button>
+
+            <button class="perfil-opcao" onclick="modalForaEscopo('Endereço')">
+              <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11z" />
+                  <circle cx="12" cy="10" r="2.5" />
+                </svg></span>
+              <span class="txt"><strong>Endereço</strong><span>Endereço de cadastro e entrega</span></span>
+              <span class="seta">›</span>
+            </button>
+
+            <button class="perfil-opcao" onclick="modalForaEscopo('Alterar senha')">
+              <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="5" y="11" width="14" height="10" rx="2" />
+                  <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                </svg></span>
+              <span class="txt"><strong>Alterar senha</strong><span>Atualize sua senha de acesso</span></span>
+              <span class="seta">›</span>
+            </button>
+
+            <button class="perfil-opcao" onclick="modalForaEscopo('Biometria')">
+              <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M5.6 9.5A7 7 0 0 1 12 5c2.8 0 5.2 1.6 6.4 4" />
+                  <path d="M8.5 12a3.5 3.5 0 0 1 7 0c0 2.5.6 4.5 1.5 6" />
+                  <path d="M12 12v3a7 7 0 0 0 1 3.5" />
+                </svg></span>
+              <span class="txt"><strong>Biometria</strong><span>Acesso e validação por biometria</span></span>
+              <span class="seta">›</span>
+            </button>
+
+            <div class="perfil-secao">Preferências</div>
+
+            <button class="perfil-opcao" onclick="abrirNotificacoes()">
+              <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+                </svg></span>
+              <span class="txt"><strong>Notificações</strong><span>Avisos e novidades do TRI</span></span>
+              <span class="seta">›</span>
+            </button>
+
+            <div class="perfil-secao">Suporte</div>
+
+            <button class="perfil-opcao" onclick="modalForaEscopo('Ajuda')">
+              <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M9.5 9.5a2.5 2.5 0 1 1 3.4 2.3c-.7.3-.9.7-.9 1.7" />
+                  <path d="M12 17h.01" />
+                </svg></span>
+              <span class="txt"><strong>Ajuda</strong><span>Dúvidas frequentes e contato</span></span>
+              <span class="seta">›</span>
+            </button>
+
+            <button class="perfil-opcao" onclick="modalForaEscopo('Sobre')">
+              <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 11v5" />
+                  <path d="M12 8h.01" />
+                </svg></span>
+              <span class="txt"><strong>Sobre</strong><span>Versão do app, termos e privacidade</span></span>
+              <span class="seta">›</span>
+            </button>
+
+            <button class="btn-sair-perfil" onclick="sair()">Sair</button>
+            <div class="perfil-versao">App TRI · versão 1.1.0</div>
+          </div>
+
+          <!-- ═══════════ SOLICITAR CARTÃO ═══════════ -->
+          <div class="view fluxo" id="view-solicitarCartao">
+            <p class="subtitulo" style="margin-top:8px">Você ainda não possui um cartão TRI. Solicite o seu para começar
+              a usar o transporte.</p>
+            <button class="btn-solicitar-cartao" onclick="modalForaEscopo('Solicitar Cartão')">
+              <span class="txt">Solicitar Cartão</span>
+              <span class="logos"><span>sim</span><span>tri</span></span>
+            </button>
+          </div>
+
+          <!-- ═══════════ MEUS CARTÕES (lista) ═══════════ -->
+          <div class="view fluxo" id="view-cartoes">
+            <div class="carteira-intro">
+              <h2>Seus cartões, em um só lugar</h2>
+              <p id="cartoesOrientacao">Acompanhe a chegada e gerencie seus cartões.</p>
+            </div>
+            <section id="cartoesAcompanhamento" aria-label="Cartões solicitados"></section>
+            <section class="carteira-cadastrados" aria-labelledby="cartoesListaTitulo">
+              <details class="carteira-expansivel" open>
+                <summary class="carteira-grupo-titulo">
+                  <span class="carteira-grupo-rotulo">CONSULTA E GESTÃO</span>
+                  <h3 id="cartoesListaTitulo">Seus cartões</h3>
+                  <p id="cartoesListaDescricao">Consulte os cartões ativos, cancelados ou com pagamento pendente.</p>
+                  <span class="carteira-alternar"><span class="carteira-recolher">Recolher lista</span><span
+                      class="carteira-expandir">Expandir lista</span><svg aria-hidden="true" viewBox="0 0 24 24"
+                      fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="m6 9 6 6 6-6" />
+                    </svg></span>
+                </summary>
+
+                <div class="cartao-item" onclick="selecionarCartao('51-9')">
+                  <div class="cartao-visual azul">
+                    <span class="logo-c">tri<small>transporte<br>integrado</small></span>
+                    <span class="rota-c" aria-hidden="true"></span>
+                    <span class="legenda-c">Transporte Integrado</span>
+                  </div>
+                  <span class="cartao-badge ativo">ATIVO</span>
+                  <div class="cartao-num"><span class="lbl">Cartão</span> 98.03.000000051-9</div>
+                  <div class="cartao-tipos">TRI - VALE TRANSPORTE / TRI - PASSAGEM ANTECIPADA</div>
+                </div>
+
+                <div class="cartao-item cancelado-item" onclick="selecionarCartao('49-1')">
+                  <div class="cartao-visual escolar">
+                    <span class="logo-c">tri<small>transporte<br>integrado</small></span>
+                    <span class="rota-c" aria-hidden="true"></span>
+                    <span class="foto-aluno" aria-hidden="true">🧑‍🎓</span>
+                    <span class="legenda-c">Passagem Escolar</span>
+                  </div>
+                  <span class="cartao-badge cancelado">CANCELADO</span>
+                  <div class="cartao-num"><span class="lbl">Cartão</span> 98.03.000000049-1</div>
+                  <div class="cartao-tipos">TRI - PASSAGEM ESCOLAR / TRI - PASSAGEM ANTECIPADA</div>
+                </div>
+
+                <!-- ═══════════ NOVO CARTÃO: ISENÇÃO PCD ═══════════ -->
+                <div class="cartao-item" onclick="navegar('cartaoPcd')">
+                  <div class="cartao-visual pcd">
+                    <span class="logo-c">tri<small>transporte<br>integrado</small></span>
+                    <span class="rota-c" aria-hidden="true"></span>
+                    <span class="foto-aluno" aria-hidden="true">♿</span>
+                    <span class="legenda-c">Isenção PCD</span>
+                  </div>
+                  <span class="cartao-badge aguardando">AGUARDANDO PAGAMENTO</span>
+                  <div class="cartao-num"><span class="lbl">Cartão</span> 98.03.000000068-2</div>
+                  <div class="cartao-tipos">TRI - ISENÇÃO PCD / TRI - PASSAGEM ANTECIPADA</div>
+                </div>
+              </details>
+            </section>
+          </div>
+
+          <div class="view fluxo" id="view-rastreioCartao" tabindex="-1"></div>
+
+          <!-- ═══════════ CARTÃO — DETALHE ═══════════ -->
+          <div class="view fluxo" id="view-cartaoDetalhe">
+            <div class="cartao-visual azul" id="detCartaoVisual" style="margin-top:6px">
+              <span class="logo-c">tri<small>transporte<br>integrado</small></span>
+              <span class="rota-c" aria-hidden="true"></span>
+              <span class="foto-aluno" id="detFoto" aria-hidden="true">🧑‍🎓</span>
+              <span class="legenda-c" id="detLegenda">Transporte Integrado</span>
+            </div>
+            <span class="cartao-badge ativo" id="detCartaoBadge">ATIVO</span>
+            <div class="cartao-num"><span class="lbl">Cartão</span> <span id="detCartaoNum"></span></div>
+            <div class="cartao-tipos" id="detCartaoTipos"></div>
+
+            <button class="btn-acao-cartao amarelo" id="btn2via" onclick="solicitar2via()">
+              <span id="btn2viaLabel">Cancelar / Solicitar 2ª via de cartão</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M20 11.5a8 8 0 1 0-1.9 6.1" />
+                <path d="M20 4.5v4.5h-4.5" />
+              </svg>
+            </button>
+            <button class="btn-acao-cartao vermelho" id="btnCancelarCartao" onclick="cancelarCartao()">
+              <span>Cancelar cartão</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M9 9l6 6M15 9l-6 6" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- ═══════════ CARTÃO PCD — DETALHE COM PAGAMENTO ═══════════ -->
+          <div class="view fluxo" id="view-cartaoPcd">
+
+            <div class="cartao-visual pcd" style="margin-top:6px">
+              <span class="logo-c">tri<small>transporte<br>integrado</small></span>
+              <span class="rota-c" aria-hidden="true"></span>
+              <span class="foto-aluno" aria-hidden="true">♿</span>
+              <span class="legenda-c">Isenção PCD</span>
+            </div>
+
+            <span class="cartao-badge aguardando">AGUARDANDO PAGAMENTO</span>
+
+            <div class="cartao-num"><span class="lbl">Cartão</span> 98.03.000000068-2</div>
+            <div style="margin-bottom: 20px" class="cartao-tipos">TRI - ISENÇÃO PCD / TRI - PASSAGEM ANTECIPADA</div>
+
+            <!-- Botão Pague aqui - versão simples -->
+            <button class="btn-acao-cartao vermelho" onclick="navegar('idosoPagamento')" style="margin-top: 12px;">
+              <span>PAGUE AQUI</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M12 2v20" />
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+              </svg>
+            </button>
+
+          </div>
+
+          <!-- ═══════════ CANCELAR CARTÃO — MOTIVO ═══════════ -->
+          <div class="view fluxo" id="view-cancelarCartao">
+            <div class="cancel-subtitulo">Selecione o motivo:</div>
+            <button class="motivo-btn" onclick="selecionarMotivo('Cartão Perdido')">Cartão Perdido</button>
+            <button class="motivo-btn" onclick="selecionarMotivo('Cartão Roubado')">Cartão Roubado</button>
+            <button class="motivo-btn" onclick="selecionarMotivo('Cartão Danificado')">Cartão Danificado</button>
+          </div>
+
+          <!-- ═══════════ CANCELAMENTO — CONFIRMAÇÃO ═══════════ -->
+          <div class="view fluxo" id="view-cancelamentoConfirmacao">
+            <div class="icone-sucesso">✓</div>
+            <div class="cancel-sucesso-txt">A solicitação de cancelamento do cartão foi efetuada com sucesso!</div>
+            <div class="cancel-protocolo">Seu protocolo <b id="protocoloCancelamento">01727357778</b> foi enviado para
+              seu e-mail.</div>
+            <button class="btn primario" onclick="finalizarCancelamento()">Confirmar</button>
+          </div>
+
+          <!-- ═══════════ 2ª VIA: LOCAL DE RETIRADA ═══════════ -->
+          <div class="view fluxo" id="view-viaRetirada">
+            <h2 class="titulo-grande">Selecione o local de retirada</h2>
+            <button class="local-opcao" onclick="retirada2via('AV. ASSIS BRASIL, 4320 - SARANDI, PORTO ALEGRE')">
+              <strong>Posto Triângulo</strong>
+              <small>Av. Assis Brasil, 4320 - Sarandi, Porto Alegre</small>
+            </button>
+            <button class="local-opcao" onclick="retirada2via('AV. JOÃO PESSOA, 1105 - FARROUPILHA, PORTO ALEGRE')">
+              <strong>SMDS</strong>
+              <small>Av. João Pessoa, 1105 - Farroupilha, Porto Alegre</small>
+            </button>
+            <button class="local-opcao" onclick="entrega2viaCasa()">
+              <strong>Receber em casa</strong>
+            </button>
+            <div class="prazo-entrega">
+              <b>Prazo de entrega:</b>
+              <span>A partir de 3 dias úteis.</span>
+            </div>
+          </div>
+
+          <!-- ═══════════ 2ª VIA: ENDEREÇO DE ENTREGA ═══════════ -->
+          <div class="view fluxo" id="view-viaEndereco">
+            <h2 class="titulo-grande">Selecione o endereço de entrega</h2>
+            <button class="local-opcao"
+              onclick="selecionarEndereco2via('AV. ASSIS BRASIL, 4320 - SARANDI, PORTO ALEGRE')">
+              <strong>Endereço Residencial</strong>
+              <small>Av. Assis Brasil, 4320 - Sarandi, Porto Alegre</small>
+            </button>
+            <button class="link-acao" onclick="modalForaEscopo('Editar endereço')">Editar</button>
+
+            <div id="viaEnderecoEntrega" class="oculto">
+              <button class="local-opcao"
+                onclick="selecionarEndereco2via('AV. PROTÁSIO ALVES, 3886 - PETRÓPOLIS, PORTO ALEGRE')">
+                <strong>Endereço Entrega</strong>
+                <small>Av. Protásio Alves, 3886 - Petrópolis, Porto Alegre</small>
+              </button>
+              <button class="link-acao" onclick="modalForaEscopo('Editar endereço')">Editar</button>
+            </div>
+
+            <button class="btn-contorno" onclick="navegar('viaCadastroEndereco')">Cadastrar endereço de entrega</button>
+
+            <div class="prazo-entrega">
+              <b>Prazo de entrega:</b>
+              <span>A partir de 3 dias úteis.</span>
+            </div>
+          </div>
+
+          <!-- ═══════════ 2ª VIA: CADASTRO DE ENDEREÇO ═══════════ -->
+          <div class="view fluxo" id="view-viaCadastroEndereco">
+            <h2 class="titulo-grande">Cadastro de Endereço</h2>
+            <div class="campo"><input placeholder="CEP" inputmode="numeric"></div>
+            <button class="btn azul" onclick="modalForaEscopo('Procurar pelo CEP')">Procurar pelo CEP</button>
+            <div style="height:14px"></div>
+            <div class="campo"><input placeholder="Endereço de Entrega"></div>
+            <div class="campo"><select>
+                <option>Estado</option>
+                <option>RS</option>
+              </select></div>
+            <div class="campo"><input placeholder="Cidade"></div>
+            <div class="campo"><input placeholder="Bairro"></div>
+            <div class="campo"><input placeholder="Rua"></div>
+            <div class="campo"><input placeholder="Número" inputmode="numeric"></div>
+            <div class="campo"><input placeholder="Complemento"></div>
+            <button class="btn primario" onclick="salvarEndereco2via()">Salvar</button>
+          </div>
+
+          <!-- ═══════════ 2ª VIA: AVISO IMPORTANTE (PRAZO) ═══════════ -->
+          <div class="view fluxo" id="view-viaAviso">
+            <h2 class="titulo-grande">Aviso Importante: Prazo para Retirada do Cartão</h2>
+            <p class="texto-corrido">Informamos que, após a solicitação do cartão, o mesmo ficará
+              disponível para retirada pelo prazo de <b>120 dias</b>. Caso não seja retirado dentro
+              desse período, o cartão será automaticamente mutilado e descartado de forma segura, sem
+              possibilidade de recuperação. Caso o usuário deseje solicitar um novo cartão a prazo, será
+              necessária a emissão de uma nova via, sujeita à cobrança de eventuais taxas.</p>
+            <button class="btn azul" onclick="navegar('viaSucesso')">Avançar</button>
+          </div>
+
+          <!-- ═══════════ 2ª VIA: SOLICITAÇÃO REALIZADA (FIB) ═══════════ -->
+          <div class="view fluxo" id="view-viaSucesso">
+            <h2 class="titulo-grande">Solicitação realizada com sucesso</h2>
+            <div class="cancel-protocolo" style="text-align:left;margin:6px 0 14px">Protocolo: <b>2024124772440</b>
+            </div>
+            <p class="texto-corrido">Olá! Sua solicitação do Cartão FIB foi realizada com sucesso. O
+              prazo de recebimento no endereço selecionado é a partir de <b>3 dias úteis</b>, após a
+              confirmação do pagamento.</p>
+            <button class="btn azul" onclick="navegar('viaPagamento')">Pagar</button>
+          </div>
+
+          <!-- ═══════════ 2ª VIA: PAGAMENTO (PIX) ═══════════ -->
+          <div class="view fluxo" id="view-viaPagamento">
+            <div class="pix-logo" style="margin-top:6px">
+              <svg width="36" height="36" viewBox="0 0 48 48" aria-hidden="true">
+                <g fill="#32BCAD">
+                  <rect x="13" y="13" width="22" height="22" rx="6" transform="rotate(45 24 24)" />
+                </g>
+                <circle cx="40" cy="9" r="3" fill="#32BCAD" />
+              </svg>
+              <div class="letras" style="font-size:24px">pix<small>powered by <b>Banco Central</b></small></div>
+            </div>
+
+            <div class="qr-fake" id="qrFakeVia" aria-label="QR Code PIX (ilustrativo)"></div>
+
+            <div class="valor-central" style="margin-top:14px">Número do pedido: 19070299</div>
+            <div class="valor-central" style="font-size:15px;margin-top:4px">Valor: R$ 11,90</div>
+
+            <div class="pill-expira">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 7v5l3 2" />
+              </svg>
+              Expira em: 19/11/2024 16:07
+            </div>
+
+            <div class="chave-box"><span>00020101021226850014br.gov.bcb.pix2563qrcode.tri...</span><b>›</b></div>
+
+            <div class="opcoes-pix">
+              <p>Escaneie o código com seu celular ou copie o código PIX no app do seu banco.</p>
+            </div>
+
+            <div class="botao-fixo">
+              <button class="btn azul" style="margin-top:16px" onclick="reiniciarPrototipo()">Concluir</button>
+            </div>
+          </div>
+
+          <!-- ═══════════ BENEFÍCIOS: SELEÇÃO DE PERFIL ═══════════ -->
+          <div class="view fluxo" id="view-perfis">
+            <h2 class="titulo-pagina">Solicitar Benefício</h2>
+            <p class="subtitulo">Selecione o perfil habilitado para iniciar a solicitação do benefício.</p>
+
+            <div class="aviso">
+              No momento, os perfis <b>Escolar</b> e <b>TRI Idoso</b> estão disponíveis para
+              solicitação pelo aplicativo. Para o TRI Idoso, o app solicitará foto do documento
+              (RG/CNH) e biometria facial. Os demais perfis serão liberados em breve.
+            </div>
+
+            <!-- perfis de fase futura — ocultos nesta versão -->
+            <button class="cartao-perfil indisponivel oculto" onclick="perfilIndisponivel('Passe Antecipado')">
+              <span class="badge-breve">Em breve</span>
+              <span class="perfil-ico" style="background:var(--orange)">💳</span>
+              <span class="txt">
+                <strong>Passe Antecipado</strong>
+                <span>Solicitação de cartão comum para utilização antecipada de créditos.</span>
+              </span>
+              <span class="seta">›</span>
+            </button>
+
+            <button class="cartao-perfil" onclick="iniciarIdoso()">
+              <span class="perfil-ico" style="background:var(--primary-light)">👴</span>
+              <span class="txt">
+                <strong>TRI Idoso</strong>
+                <span>Solicitação com validação de documento (RG/CNH) e biometria facial.</span>
+              </span>
+              <span class="seta">›</span>
+            </button>
+
+            <button class="cartao-perfil" onclick="navegar('escolar')">
+              <span class="perfil-ico" style="background:var(--pink)">🎓</span>
+              <span class="txt">
+                <strong>Escolar</strong>
+                <span>Fluxo de benefício escolar, renovação ou emissão conforme regras do cadastro.</span>
+              </span>
+              <span class="seta">›</span>
+            </button>
+
+            <!-- perfis mapeados pela Ghabryella — fluxos ainda não construídos (abrem aviso) -->
+            <button class="cartao-perfil" onclick="perfilIndisponivel('Isenção')">
+              <span class="perfil-ico" style="background:rgb(209,13,13)">♿</span>
+              <span class="txt">
+                <strong>Isenção</strong>
+                <span>Para pessoas com deficiência que possuem isenção na tarifa.</span>
+              </span>
+              <span class="seta">›</span>
+            </button>
+
+            <button class="cartao-perfil" onclick="perfilIndisponivel('Acompanhante')">
+              <span class="perfil-ico" style="background:rgb(138,102,79)">👥</span>
+              <span class="txt">
+                <strong>Acompanhante</strong>
+                <span>Para acompanhantes de pessoas que possuem isenção na tarifa.</span>
+              </span>
+              <span class="seta">›</span>
+            </button>
+
+            <button class="cartao-perfil" onclick="perfilIndisponivel('Vou à Escola')">
+              <span class="perfil-ico" style="background:rgb(255,189,12)">📚</span>
+              <span class="txt">
+                <strong>Vou à Escola</strong>
+                <span>Para estudantes que recebem auxílio transporte da prefeitura.</span>
+              </span>
+              <span class="seta">›</span>
+            </button>
+          </div>
+
+
+          <!-- ═══════════ TRI IDOSO — ENTRADA (tela 1) ═══════════ -->
+          <div class="view fluxo" id="view-idoso">
+
+            <!-- Card do benefício TRI Idoso -->
+            <div class="card-idoso" aria-hidden="true">
+              <div class="rota"></div>
+              <div class="topo">
+                <img class="logo" src="./assets/icons/logo_tri.svg" alt="TRI">
+                <div class="foto">👴</div>
+              </div>
+              <div class="nome-cartao">Isenção Idoso</div>
+              <div class="tipo">TRI · Transporte Integrado</div>
+            </div>
+
+            <!-- Botão 1: Solicitar Benefício -->
+            <button class="cta-idoso" onclick="navegar('idosoEnviar')">
+              <span>Solicitar Benefício<br>Idoso</span>
+              <span class="ico-cta" aria-hidden="true">📋</span>
+            </button>
+
+            <!-- Botão 2: Acompanhar Solicitação -->
+            <button class="cta-idoso" onclick="App.Beneficios.acompanharSituacaoIdoso()">
+              <span>Acompanhar<br>Pedido</span>
+              <span class="ico-cta" aria-hidden="true">🔍</span>
+            </button>
+
+          </div>
+
+          <!-- ═══════════ TRI IDOSO: ACOMPANHAR PEDIDO ═══════════ -->
+          <div class="view fluxo" id="view-acompanharIdoso">
+            <h2 class="titulo-pagina">Situação do benefício:</h2>
+
+            <div class="chips-demo demo-control" aria-label="Alternar estado (somente demonstração)">
+              <button class="chip ativo" id="chipIdosoAnalise" onclick="verSituacaoIdoso('analise')">Em análise</button>
+              <button class="chip" id="chipIdosoRetirada" onclick="verSituacaoIdoso('aprovadoRetirada')">Aprovado —
+                retirada</button>
+              <button class="chip" id="chipIdosoEntrega" onclick="verSituacaoIdoso('aprovadoEntrega')">Aprovado —
+                entrega</button>
+            </div>
+
+            <!-- estado: em análise -->
+            <div id="sitIdosoAnalise">
+              <span class="badge-situacao badge-analise">EM ANÁLISE</span>
+              <div class="linha-central">Última atualização em: 10/06/2026</div>
+              <div class="dado-central">Protocolo: 2026061755443</div>
+
+              <div class="botao-fixo">
+                <button class="btn azul" onclick="reiniciarPrototipo()">Concluir</button>
+              </div>
+
+            </div>
+
+            <!-- estado: aprovado (retirada) -->
+            <div id="sitIdosoAprovadoRetirada" class="oculto">
+              <span class="badge-situacao badge-aprovado">APROVADO</span>
+              <div class="linha-central">Última atualização em: 10/06/2026</div>
+              <div class="dado-central">Protocolo: 2026061755443</div>
+              <div class="aviso atencao">
+                <!--           irá variar de acordo com o local escolhido durante a solicitação-->
+                Seu cartão estará disponível para retirada no <b>Posto Triângulo (Av. Assis Brasil, 4320 - Sarandi)</b>
+                em até 3 dias úteis.
+              </div>
+
+              <div class="botao-fixo">
+                <button class="btn azul" onclick="reiniciarPrototipo()">Concluir</button>
+              </div>
+            </div>
+
+            <!-- estado: aprovado (entrega em casa) -->
+            <div id="sitIdosoAprovadoEntrega" class="oculto">
+              <span class="badge-situacao badge-aprovado">APROVADO</span>
+              <div class="linha-central">Última atualização em: 10/06/2026</div>
+              <div class="dado-central">Protocolo: 2026061755443</div>
+
+              <div class="aviso atencao">
+                A entrega no endereço desejado tem uma taxa de R$ 11,90. Se preferir, você pode trocar para retirada em
+                um de nossos postos sem custo adicional.</b>
+              </div>
+              <div class="botao-fixo">
+                <button style="margin-bottom: 10px;" class="btn azul" onclick="navegar('idosoAlterarEntrega')">ESCOLHER
+                  LOCAL DE ENTREGA</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══════════ TRI IDOSO: ENVIAR DOCUMENTO (Etapa 1) ═══════════ -->
+          <div class="view fluxo" id="view-idosoEnviar">
+
+            <h2 class="titulo-pagina">Documento de identificação</h2>
+            <div class="etapa-label">Etapa 1 de 7</div>
+            <div style="display:flex; gap:6px;">
+              <span class="step active"></span>
+              <span class="step"></span>
+              <span class="step"></span>
+              <span class="step"></span>
+              <span class="step"></span>
+              <span class="step"></span>
+              <span class="step"></span>
+
+            </div>
+
+            <p class="subtitulo" style="margin-top: 15px;">
+              Você pode enviar seu <b style="color: var(--primary)">RG</b> ou a sua <b
+                style="color: var(--primary);">CNH</b>.
+            </p>
+
+            <div>
+              <!-- Retângulo azul com a imagem do documento -->
+              <div class="idoso-dicas"
+                style="margin-bottom: 14px; display: flex; align-items: center; justify-content: center; padding: 16px;">
+                <img src="./assets/images/documento.png" alt="Documento de identificação"
+                  style="width: 100%; max-width: 300px; height: auto; border-radius: 8px;">
+              </div>
+            </div>
+
+            <!-- Dicas -->
+            <div style="margin-bottom: 14px;">
+              <!-- Título -->
+              <div class="titulo-secao" style="color: var(--primary)">
+                <!--            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(&#45;&#45;primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">-->
+                <!--              <path d="M9 18h6"/>-->
+                <!--              <path d="M10 22h4"/>-->
+                <!--              <path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.4 1 2.3h6c0-.9.4-1.8 1-2.3A7 7 0 0 0 12 2z"/>-->
+                <!--            </svg>-->
+                Dicas:
+              </div>
+
+              <!-- Lista -->
+              <ul class="lista-info">
+                <li> <b style="color: var(--primary)">Retire</b> o documento do plástico, capa ou carteira;</li>
+                <li> Encaixe o documento na <b style="color: var(--primary)">moldura</b>;</li>
+                <li>O documento deve estar <b style="color: var(--primary)">legível</b> e sem cortes — nenhuma letra,
+                  número ou imagem pode ficar fora da moldura;</li>
+                <li> Se a imagem sair torta, borrada ou cortada, <b style="color: var(--primary)">tire novamente a
+                    foto</b>.</li>
+              </ul>
+            </div>
+            <div class="botao-fixo">
+              <button class="btn primario" onclick="navegar('idosoFrente')">COMEÇAR</button>
+            </div>
+
+          </div>
+
+          <!-- ═══════════ TRI IDOSO: FOTOGRAFE A FRENTE (Etapa 2) ═══════════ -->
+          <div class="view fluxo" id="view-idosoFrente">
+
+
+
+            <h2 class="titulo-pagina">Frente do documento</h2>
+            <div class="etapa-label">Etapa 2 de 7</div>
+            <div style="display:flex; gap:6px;">
+              <span class="step done"></span>
+              <span class="step active"></span>
+              <span class="step"></span>
+              <span class="step"></span>
+              <span class="step"></span>
+              <span class="step"></span>
+              <span class="step"></span>
+
+            </div>
+
+            <p class="subtitulo" style="margin-top: 15px">
+              Posicione a <b style="color: var(--primary);">frente</b> do documento dentro da moldura e capture a foto.
+
+              <!-- Área da câmera -->
+            <div class="camera" id="cameraFrente"
+              style="position: relative; overflow: hidden; min-height: 280px;
+        display: flex; align-items: center; justify-content: center; background: #DEDFEB; border-radius: 20px; border: none;">
+
+              <!-- Imagem do documento -->
+              <img src="./assets/images/frente.png" alt="Frente do documento" style="width: 100%; max-width: 280px;
+          height: auto; object-fit: contain; border-radius: 8px; position: relative; z-index: 1;">
+
+              <!-- BADGE FRENTE -->
+              <div class="badge-captura-foto oculto" id="badgeFrente">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10" fill="white" stroke="white" />
+                  <path d="M8 12L11 15L17 9" stroke="#4CA500" stroke-width="3" />
+                </svg>
+                FRENTE CAPTURADA
+              </div>
+
+            </div>
+
+            <!-- Botão circular de captura -->
+            <div style="display: flex; flex-direction: column; align-items: center; margin-top: 20px;">
+              <button class="btn-capturar-circulo" id="btnCapturarFrente" onclick="capturarFrente()"
+                style="width: 72px; height: 72px; border-radius: 50%; border: 4px solid var(--primary); background: var(--bg-card); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.15s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                <div style="width: 56px; height: 56px; border-radius: 50%; background: var(--primary);"></div>
+              </button>
+              <span style="font-size: 13px; color: var(--primary); margin-top: 8px; font-weight: 100;">Capturar
+                frente</span>
+            </div>
+
+            <!-- Botões após capturar - FRENTE -->
+            <div class="botao-fixo"
+              style="display: flex; gap: 10px; padding: 0; margin-top: 20px; position: relative; bottom: auto; left: auto; right: auto;">
+              <button class="oculto" id="btnTirarNovamenteFrente" onclick="tirarNovamenteFrente()"
+                style="flex: 1; background: transparent; color: var(--primary-light); border: none; padding: 14px 0; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px; cursor: pointer; text-align: center; min-height: 48px; display: flex; align-items: center; justify-content: center;">
+                TIRAR NOVAMENTE
+              </button>
+              <button class="btn primario oculto" id="btnContinuarVerso" onclick="navegar('idosoVerso')"
+                style="flex: 1.5; padding: 14px 0; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px; text-align: center; border: none; border-radius: var(--radius-card); background: var(--primary); color: #fff; cursor: pointer; min-height: 48px; display: flex; align-items: center; justify-content: center;">
+                CONTINUAR
+              </button>
+            </div>
+
+          </div>
+
+          <!-- ═══════════ TRI IDOSO: FOTOGRAFE O VERSO (Etapa 3) ═══════════ -->
+          <div class="view fluxo" id="view-idosoVerso">
+
+
+
+            <h2 class="titulo-pagina">Verso do documento</h2>
+            <div class="etapa-label">Etapa 3 de 7</div>
+            <div style="display:flex; gap:6px;">
+              <span class="step done"></span>
+              <span class="step done"></span>
+              <span class="step active"></span>
+              <span class="step"></span>
+              <span class="step"></span>
+              <span class="step"></span>
+              <span class="step"></span>
+
+            </div>
+
+            <p class="subtitulo" style="margin-top: 15px">
+              Agora posicione o <b style="color: var(--primary);">verso</b> do documento dentro da moldura e capture a
+              foto.
+            </p>
+
+            <div class="camera" id="cameraVerso" style="position: relative; overflow: hidden; min-height: 280px; display:
+  flex; align-items: center; justify-content: center; background: #DEDFEB; border-radius: 20px; border: none;">
+              <img src="./assets/images/verso.png" alt="Verso do documento" style="width: 100%; max-width: 280px;
+    height: auto; object-fit: contain; border-radius: 8px; position: relative; z-index: 1;">
+
+              <!-- BADGE VERSO -->
+              <div class="badge-captura-foto" id="badgeVerso">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10" fill="white" stroke="white" />
+                  <path d="M8 12L11 15L17 9" stroke="#4CA500" stroke-width="3" />
+                </svg>
+                VERSO CAPTURADO
+              </div>
+            </div>
+
+            <!-- Botão circular de captura -->
+            <div style="display: flex; flex-direction: column; align-items: center; margin-top: 20px;">
+              <button class="btn-capturar-circulo" id="btnCapturarVerso" onclick="capturarVerso()" style="width: 72px; height: 72px; border-radius: 50%; border: 4px solid var(--primary);
+            background: var(--bg-card); cursor: pointer; display: flex; align-items: center; justify-content:
+            center; transition: transform 0.15s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                <div style="width: 56px; height: 56px; border-radius: 50%; background: var(--primary);">
+                </div>
+              </button>
+              <span style="font-size: 13px; color: var(--primary); margin-top: 8px; font-weight: 100;">Capturar
+                verso</span>
+            </div>
+
+            <!-- Botões após capturar - VERSO -->
+            <div class="botao-fixo"
+              style="display: flex; gap: 10px; padding: 0; margin-top: 20px; position: relative; bottom: auto; left: auto; right: auto;">
+              <button class="oculto" id="btnTirarNovamenteVerso" onclick="tirarNovamenteVerso()"
+                style="flex: 1; background: transparent; color: var(--primary-light); border: none; padding: 14px 0; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px; cursor: pointer; text-align: center; min-height: 48px; display: flex; align-items: center; justify-content: center;">
+                TIRAR NOVAMENTE
+              </button>
+              <button class="btn primario oculto" id="btnContinuarSucesso" onclick="navegar('idosoFacial')"
+                style="flex: 1.5; padding: 14px 0; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px; text-align: center; border: none; border-radius: var(--radius-card); background: var(--primary); color: #fff; cursor: pointer; min-height: 48px; display: flex; align-items: center; justify-content: center;">
+                CONTINUAR
+              </button>
+            </div>
+
+          </div>
+
+          <!-- ═══════════ TRI IDOSO: VALIDACAO FACIAL ═══════════ -->
+          <div class="view fluxo" id="view-idosoFacial">
+
+            <h2 class="titulo-pagina"> Biometria facial</h2>
+            <div class="etapa-label">Etapa 4 de 7</div>
+
+            <div style="display:flex; gap:6px;">
+              <span class="step done"></span>
+              <span class="step done"></span>
+              <span class="step done"></span>
+              <span class="step active"></span>
+              <span class="step"></span>
+              <span class="step"></span>
+              <span class="step"></span>
+            </div>
+
+            <div style="margin-top: 20px;">
+              <!-- Círculo com ícone de pessoa -->
+              <div class="foto-circulo" id="fotoCirculo">
+                <span id="fotoPlaceholder" aria-hidden="true">👤</span>
+                <span class="badge-foto">FOTO CAPTURADA</span>
+              </div>
+            </div>
+
+            <!-- Orientações -->
+            <div class="titulo-secao" style="margin-top:16px; color: var(--primary)">Orientações:</div>
+            <ul class="lista-info">
+              <li>Esteja em um <b>ambiente iluminado</b>, dê preferência a um fundo claro e uniforme;</li>
+              <li>Deixe o <b>rosto bem visível</b>, sem sombras em volta dos olhos, nariz e boca;</li>
+              <li>Não utilize <b>boné, óculos ou outros adereços</b> na cabeça e no rosto;</li>
+              <li>Segure o <b>celular na altura do seu rosto</b>, não posicione a câmera na diagonal;</li>
+              <li>Mantenha sua cabeça <b>dentro do círculo</b> durante todo o processo.</li>
+            </ul>
+
+            <!-- Botão -->
+            <div class="botao-fixo" style="margin-top: 20px;">
+              <button class="btn primario" onclick="iniciarBiometria()"
+                style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;">
+                ABRIR CÂMERA
+              </button>
+            </div>
+
+          </div>
+
+          <!-- ═══════════ TRI IDOSO: BIOMETRIA FACIAL - CAPTURA ═══════════ -->
+          <div class="view fluxo" id="view-idosoBiometria" style="margin: -4px -16px -16px; padding: 16px;">
+
+            <!-- Área da câmera -->
+            <div class="camera-biometria" style="position: relative; overflow: hidden; height: 460px; display: flex; align-items: center;
+       justify-content: center; margin-bottom: 137px; width: 100%;">
+
+              <!-- Ícone de virar câmera -->
+              <div style="position: absolute; top: 16px; right: 16px; z-index: 10; cursor: default;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 48 48" fill="none"
+                  stroke="var(--primary)" stroke-linecap="round" stroke-linejoin="round" stroke-width="4">
+                  <path d="M12 11h5l2-4h10l2 4h5v16H12z" />
+                  <circle cx="24" cy="18" r="4" />
+                  <path
+                    d="M24 38C12.954 38 4 33.523 4 28c0-1.422.594-2.775 1.664-4M24 38l-4-4m4 4l-4 4m12-4.832C39.064 35.625 44 32.1 44 28c0-1.422-.594-2.775-1.664-4" />
+                </svg>
+              </div>
+
+              <!-- Moldura com círculo -->
+              <div style="position: relative; width: 180px; height: 180px; border-radius: 50%; border: 2px solid rgb(39 50 133);
+    display: flex; align-items: center; justify-content: center;">
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              </div>
+
+            </div>
+
+            <!-- Botão circular de captura BRANCO -->
+            <div style="display: flex; flex-direction: column; align-items: center; margin-top: 20px;">
+              <button class="btn-capturar-circulo" id="btnCapturarBiometria" onclick="capturarBiometria()" style="width: 72px; height: 72px; border-radius: 50%; border: 4px solid var(--primary);
+            background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: transform 0.15s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                <div style="width: 56px; height: 56px; border-radius: 50%; background: var(--primary);"></div>
+              </button>
+              <span style="font-size: 13px; color: var(--primary); margin-top: 8px; font-weight: 100;">Capturar
+                foto</span>
+            </div>
+
+            <!-- Botões após capturar (ocultos inicialmente) -->
+            <div class="botao-fixo"
+              style="display: flex; gap: 10px; padding: 0; margin-top: 20px; position: relative; bottom: auto; left: auto; right: auto;">
+              <button class="oculto" id="btnTirarNovamenteBiometria" onclick="tirarNovamenteBiometria()" style="flex: 1; background: transparent; color: var(--primary-light); border: none; padding: 14px 0;
+                  font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px; cursor: pointer;
+                  text-align: center; min-height: 48px; display: flex; align-items: center; justify-content: center;">
+                TIRAR NOVAMENTE
+              </button>
+              <button class="btn primario oculto" id="btnContinuarBiometria" onclick="navegar('idosoSucesso')"
+                style="flex: 1.5; padding: 14px 0; font-size: 12px; font-weight: 700; text-transform: uppercase;
+                  letter-spacing: .3px; text-align: center; border: none; border-radius: var(--radius-card);
+                  background: var(--primary); color: #fff; cursor: pointer; min-height: 48px; display: flex; align-items: center; justify-content: center;">
+                CONTINUAR
+              </button>
+            </div>
+
+          </div>
+
+          <!-- ═══════════ TRI IDOSO: FALHA NA BIOMETRIA ═══════════ -->
+          <div class="view fluxo" id="view-idosoFalha">
+
+            <h2 class="titulo-pagina">Falha na biometria facial</h2>
+            <div class="etapa-label">Etapa 5 de 7</div>
+
+            <div style="display:flex; gap:6px; margin-bottom: 4px; justify-content: center;">
+              <span class="step done"></span>
+              <span class="step done"></span>
+              <span class="step done"></span>
+              <span class="step done"></span>
+              <span class="step active"></span>
+              <span class="step"></span>
+              <span class="step"></span>
+            </div>
+
+            <div class="icone-falha">
+              <div>
+                <span>✕</span>
+              </div>
+            </div>
+
+            <p class="cancel-protocolo">
+              Ops! Algo deu errado.
+            </p>
+
+            <p class="cancel-protocolo">
+              Não foi possível validar sua biometria facial.
+              <br>
+              Por favor, tente novamente.
+            </p>
+
+            <div class="botao-fixo">
+              <button class="btn primario" onclick="navegar('idosoBiometria')">TENTAR NOVAMENTE</button>
+            </div>
+
+          </div>
+
+          <!-- ═══════════ TRI IDOSO: SOLICITAÇÃO APROVADA ═══════════ -->
+          <div class="view fluxo" id="view-idosoSucesso">
+
+            <h2 class="titulo-pagina">Solicitação realizada</h2>
+            <div class="etapa-label">Etapa 5 de 7</div>
+            <div style="display:flex; gap:6px; margin-bottom: 4px; justify-content: center;">
+              <span class="step done"></span>
+              <span class="step done"></span>
+              <span class="step done"></span>
+              <span class="step done"></span>
+              <span class="step active"></span>
+              <span class="step"></span>
+              <span class="step"></span>
+            </div>
+
+            <div class="fib-intro">
+              O número de protocolo é:
+            </div>
+
+            <div class="fib">
+              2026061755443
+            </div>
+
+            <p class="texto-corrido">
+              Sua identidade foi confirmada por biometria facial e sua solicitação do benefício Cartão - TRI Idoso foi
+              realizada com sucesso.
+              <br>
+              <br>
+              Agora é só escolher na próxima etapa como deseja receber seu cartão.
+            </p>
+
+            <div class="botao-fixo" style="display: flex; justify-content: center;">
+              <button class="btn primario" onclick="navegar('idosoEntrega')">CONTINUAR</button>
+            </div>
+
+          </div>
+
+          <!-- ═══════════ TRI IDOSO: SELECIONE O LOCAL DE ENTREGA ═══════════ -->
+          <div class="view fluxo" id="view-idosoEntrega">
+
+            <h2 class="titulo-pagina">Selecione o local de entrega</h2>
+            <div class="etapa-label">Etapa 6 de 7</div>
+            <div style="display:flex; gap:6px; margin-bottom: 4px;">
+              <span class="step done"></span>
+              <span class="step done"></span>
+              <span class="step done"></span>
+              <span class="step done"></span>
+              <span class="step done"></span>
+              <span class="step active"></span>
+              <span class="step"></span>
+              <br>
+            </div>
+
+            <button class="local-opcao"
+              onclick="escolherLocalIdoso('POSTO TRIÂNGULO','AV. ASSIS BRASIL, 4320 - SARANDI, PORTO ALEGRE')">
+              <strong>Posto Triângulo</strong>
+              <small>Av. Assis Brasil, 4320 - Sarandi, Porto Alegre</small>
+            </button>
+
+            <button class="local-opcao"
+              onclick="escolherLocalIdoso('SMDS','AV. JOÃO PESSOA, 1105 - FARROUPILHA, PORTO ALEGRE')">
+              <strong>SMDS</strong>
+              <small>Av. João Pessoa, 1105 - Farroupilha, Porto Alegre</small>
+            </button>
+
+            <button class="local-opcao" onclick="escolherEntregaCasaIdoso()">
+              <strong>Receber em casa</strong>
+            </button>
+
+            <div class="prazo-entrega">
+              <b>Prazo de entrega:</b>
+              <span>A partir de 3 dias úteis.</span>
+            </div>
+
+          </div>
+
+          <!-- ═══════════ TRI IDOSO: SOLICITAÇÃO REALIZADA COM SUCESSO (FINAL) ═══════════ -->
+          <div class="view fluxo" id="view-idosoSucessoFinal">
+
+            <h2 class="titulo-pagina">Pedido finalizado</h2>
+            <div class="etapa-label">Etapa 7 de 7</div>
+            <div style="display:flex; gap:6px; margin-bottom: 4px; justify-content: center;">
+              <span class="step done"></span>
+              <span class="step done"></span>
+              <span class="step done"></span>
+              <span class="step done"></span>
+              <span class="step done"></span>
+              <span class="step done"></span>
+              <span class="step active"></span>
+            </div>
+
+            <div class="icone-sucesso">
+              <div>
+                <span>✓</span>
+              </div>
+            </div>
+
+            <p class="texto-corrido">
+              Olá! Seu pedido do Cartão TRI - Idoso foi finalizado. Seus dados serão analisados pela nossa equipe.
+              Após a aprovação, o cartão será produzido e disponibilizado
+              conforme a opção escolhida.
+              <br><br>
+              Acompanhe o status da sua solicitação acessando o menu <b>Benefícios > TRI Idoso</b>.
+              O prazo de retirada no local selecionado é de 3 dias úteis <b>após aprovação</b>.
+            </p>
+
+            <div class="botao-fixo">
+              <button class="btn primario" onclick="finalizarPedidoIdoso()" style="width: 100%;">FINALIZAR</button>
+            </div>
+          </div>
+
+          <!-- ═══════════ TRI IDOSO: ALTERAR LOCAL DE ENTREGA ═══════════ -->
+          <div class="view fluxo" id="view-idosoAlterarEntrega">
+
+            <h2 style="margin-bottom: 45px" class="titulo-pagina">Selecione o local de entrega</h2>
+
+            <button class="local-opcao"
+              onclick="alterarLocalIdoso('POSTO TRIÂNGULO','AV. ASSIS BRASIL, 4320 - SARANDI, PORTO ALEGRE')">
+              <strong>Posto Triângulo</strong>
+              <small>Av. Assis Brasil, 4320 - Sarandi, Porto Alegre</small>
+            </button>
+
+            <button class="local-opcao"
+              onclick="alterarLocalIdoso('SMDS','AV. JOÃO PESSOA, 1105 - FARROUPILHA, PORTO ALEGRE')">
+              <strong>SMDS</strong>
+              <small>Av. João Pessoa, 1105 - Farroupilha, Porto Alegre</small>
+            </button>
+
+            <button class="local-opcao" onclick="alterarEntregaCasaIdoso()">
+              <strong>Receber em casa</strong>
+            </button>
+
+            <div class="prazo-entrega">
+              <b>Prazo de entrega:</b>
+              <span>A partir de 3 dias úteis.</span>
+            </div>
+
+          </div>
+
+          <!-- ═══════════ TRI IDOSO: PAGAMENTO (PIX) ═══════════ -->
+          <div class="view fluxo" id="view-idosoPagamento">
+            <div class="pix-logo" style="margin-top:6px">
+              <svg width="36" height="36" viewBox="0 0 48 48" aria-hidden="true">
+                <g fill="#32BCAD">
+                  <rect x="13" y="13" width="22" height="22" rx="6" transform="rotate(45 24 24)" />
+                </g>
+                <circle cx="40" cy="9" r="3" fill="#32BCAD" />
+              </svg>
+              <div class="letras" style="font-size:24px">pix<small>powered by <b>Banco Central</b></small></div>
+            </div>
+
+            <div class="qr-fake" id="qr-fake-idoso" aria-label="QR Code PIX (ilustrativo)"></div>
+
+            <div class="valor-central">Número do pedido: 27994157</div>
+            <div class="valor-central" style="font-size:17px;margin:4px 0 14px">Valor: <span id="valorPedidoIdoso">R$
+                11,90</span></div>
+
+            <div class="pill-expira">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 7v5l3 2" />
+              </svg>
+              Expira em: 11/06/2026 12:03
+            </div>
+
+            <button class="btn azul" id="btnCopiarChave" onclick="copiarChave()">Copiar chave</button>
+
+            <div class="chave-box"><span>00020101021226850014br.gov.bcb.pix2563qrcode.tri...</span><b>›</b></div>
+
+            <div class="opcoes-pix">
+              <div class="tit">Você pode fazer uma das opções:</div>
+              <p>Copie e cole a chave PIX no campo "PIX copia e cola" no app do seu banco.</p>
+              <div class="divisor-ou">OU</div>
+              <p>Escaneie o Qr Code acima no app do seu banco.</p>
+            </div>
+
+            <div class="botao-fixo">
+              <button class="btn-contorno" style="margin-top:16px" onclick="retornarMenu()">← Retornar ao menu</button>
+            </div>
+          </div>
+
+          <!-- ═══════════ ESCOLAR — ENTRADA (tela 1) ═══════════ -->
+          <div class="view fluxo" id="view-escolar">
+
+            <div class="card-escolar" aria-hidden="true">
+              <div class="rota"></div>
+              <div class="topo">
+                <img class="logo" src="./assets/icons/logo_tri.svg" alt="TRI">
+                <div class="foto">🧑‍🎓</div>
+              </div>
+              <div class="nome-cartao">Passagem Escolar</div>
+              <div class="tipo">TRI · Transporte Integrado</div>
+            </div>
+
+            <!-- beneficiários vinculados (campo da Ghabryella) ***comentado por enquanto -->
+            <!-- <div class="titulo-secao">Beneficiários</div>
+        <div class="lista-membros">
+          <div class="card-membro">
+            <div class="membro-ico">🧑‍🎓</div>
+            <div class="membro-info">
+              <strong>João da Silva</strong>
+              <span>Benefício Escolar</span>
+            </div>
+          </div>
+        </div> -->
+
+            <button class="cta-escolar" onclick="navegar('informacoes')">
+              <span>Solicitar Benefício<br>Escolar</span>
+              <span class="ico-cta" aria-hidden="true">✏️</span>
+            </button>
+
+            <button class="cta-escolar" onclick="acompanharSituacao()">
+              <span>Acompanhar<br>Solicitação</span>
+              <span class="ico-cta" aria-hidden="true">🔍</span>
+            </button>
+          </div>
+
+          <!-- ═══════════ ESCOLAR: INFORMAÇÕES (telas 2 e 2A) ═══════════ -->
+          <div class="view fluxo" id="view-informacoes">
+
+            <h2 class="titulo-info">Prazos para a análise da EPTC:</h2>
+            <div style="margin: -6px 0 4px; margin-bottom: 8px;" class="titulo-secao">Informações:</div>
+
+            <ul class="lista-info">
+              <li><b>Solicitações de renovação:</b> 25 dias úteis, a partir do envio da solicitação e o aluno tem a
+                liberação de uso e recarga pelo prazo de 30 dias, enquanto aguarda a liberação.</li>
+              <li><b>Solicitações de renovação com segunda via:</b> 12 dias úteis.</li>
+              <li><b>Solicitações de novos benefícios:</b> 12 dias úteis.</li>
+              <li><b>Solicitações de segunda via:</b> 2 dias úteis, via aplicativo, locais presenciais e por telefone,
+                para maiores informações acesse o site¹.</li>
+            </ul>
+
+            <div class="titulo-secao">Observações:</div>
+            <ul class="lista-info">
+              <li>São aceitos como comprovantes de domicílio qualquer correspondência comercial, declaração do posto de
+                saúde, CRAS ou Associação, devidamente assinada e carimbada pela instituição declarante e, desde que
+                atualizado, a Certidão do CadÚnico com o QR Code.</li>
+              <li>São aceitos como comprovantes de renda contracheque, recibo, demonstrativo ou Extrato de benefícios e,
+                desde que atualizado, a Certidão do CadÚnico com o QR Code. Para o beneficiário que não possuir renda ou
+                renda autônoma, deve ser preenchida a declaração contida na FIB, para o grupo familiar deve ser entregue
+                auto declaração. Para quem tem CNPJ deve apresentar Pró-Labore, declaração do contador devidamente
+                carimbada e assinada, ou outros documentos que comprovem o recebimento mensal da empresa (não são
+                aceitos declarações anuais, IRPF ou declaração de pessoa física). Para menores de 14 anos, enviar
+                documento.</li>
+              <li>Lembramos que menores de 18 anos não assinam documentos.</li>
+              <li>Mais informações sobre as faixas de renda e percentuais de isenções, Legislação Vigente e documentos
+                para declarações estão disponíveis no site² da EPTC ou no site³ do Google Maps.</li>
+            </ul>
+
+            <div class="sites">
+              <b>Site(1):</b> <a href="https://www.tripoa.net.br/" target="_blank"
+                rel="noopener">https://www.tripoa.net.br/</a><br>
+              <b>Site(2):</b> <a href="https://prefeitura.poa.br/eptc/passagem-escolar-tri-escolar" target="_blank"
+                rel="noopener">prefeitura.poa.br/eptc/passagem-escolar-tri-escolar</a><br>
+              <b>Site(3):</b> <a href="#" onclick="return false">EPTC - TRI Escolar - Google my Maps</a>
+            </div>
+
+            <div class="btn-row">
+              <button class="btn texto" onclick="voltar()">Voltar</button>
+              <button class="btn primario" onclick="navegar('foto')">Continuar</button>
+            </div>
+          </div>
+
+          <!-- ═══════════ ESCOLAR: FOTO — ETAPA 1 DE 5 (tela 3) ═══════════ -->
+          <div class="view fluxo" id="view-foto">
+            <h2 class="titulo-pagina">Pré Cadastro</h2>
+            <div class="etapa-label">Etapa 1 de 6</div>
+            <div class="stepper">
+              <span class="step active"></span><span class="step"></span><span class="step"></span>
+              <span class="step"></span><span class="step"></span>
+            </div>
+
+            <div class="foto-circulo" id="fotoCirculo">
+              <span id="fotoPlaceholder" aria-hidden="true">👤</span>
+              <button class="fab" onclick="tirarFoto()" aria-label="Tirar foto">📷</button>
+              <span class="badge-foto">FOTO CAPTURADA</span>
+            </div>
+
+            <div class="titulo-secao" style="margin-top:16px">Orientações:</div>
+            <ul class="lista-info">
+              <li>Esteja em um <b>ambiente iluminado</b>, dê preferência a um fundo claro e uniforme;</li>
+              <li>Deixe o <b>rosto bem visível</b>, sem sombras em volta dos olhos, nariz e boca;</li>
+              <li>Não utilize <b>boné, óculos ou outros adereços</b> na cabeça e no rosto;</li>
+              <li>Segure o <b>celular na altura do seu rosto</b>, não posicione a câmera na diagonal;</li>
+              <li>Mantenha sua cabeça <b>dentro do círculo</b> durante todo o processo.</li>
+            </ul>
+
+            <div class="btn-row">
+              <button class="btn texto" onclick="voltar()">Voltar</button>
+              <button class="btn primario" id="btnContinuarFoto" onclick="navegar('cadastro')"
+                disabled>Continuar</button>
+            </div>
+          </div>
+
+          <!-- ═══════════ ESCOLAR: PRÉ-CADASTRO — ETAPA 2 DE 5 (telas 4, 4B e 4C) ═══════════ -->
+          <div class="view fluxo" id="view-cadastro">
+            <h2 class="titulo-pagina">Pré Cadastro</h2>
+            <div class="etapa-label">Etapa 2 de 5</div>
+            <div class="stepper">
+              <span class="step done"></span><span class="step active"></span><span class="step"></span>
+              <span class="step"></span><span class="step"></span>
+            </div>
+
+            <div class="dado-box">
+              <b>CPF:</b> 012.345.789-00<br>
+              <b>Nome:</b> GIOVANA DIAS<br>
+              <b>Data Nascimento:</b> 01/01/2008<br>
+              <b>Nome da Mãe:</b> JOANA DIAS<br>
+              <b>Telefone:</b> (51) 900000000<br>
+              <b>E-mail:</b> GIOVANA@EMAIL.COM
+            </div>
+            <button class="link-acao" onclick="modalForaEscopo('Alterar E-mail/Telefone')">Alterar
+              E-mail/Telefone</button>
+
+            <div class="campo">
+              <label>Nome do Pai:</label>
+              <input placeholder="Nome Completo">
+            </div>
+
+            <div class="campo">
+              <label>Sexo <span class="req">(*)</span>:</label>
+              <div class="radio-grupo">
+                <label><input type="radio" name="sexo"> Masculino</label>
+                <label><input type="radio" name="sexo"> Feminino</label>
+                <label><input type="radio" name="sexo" checked> Não informar</label>
+              </div>
+            </div>
+
+            <div class="campo">
+              <label>Mora sozinho(a)? <span class="req">(*)</span>:</label>
+              <div class="radio-grupo linha">
+                <label><input type="radio" name="moraSozinho" value="sim" onchange="mostrarMembros(false)"> Sim</label>
+                <label><input type="radio" name="moraSozinho" value="nao" onchange="mostrarMembros(true)"> Não</label>
+              </div>
+              <!-- habilitado apenas quando NÃO mora sozinho -->
+              <button class="btn primario" id="btnMembro" style="margin-top:10px" onclick="abrirAdicionarMembro()"
+                disabled>INCLUIR MEMBRO FAMILIAR</button>
+            </div>
+
+            <div class="campo">
+              <label>Renda do beneficiário <span class="req">(*)</span>:</label>
+              <input value="R$ 1.200,00">
+            </div>
+
+            <div class="campo">
+              <label>Escola <span class="req">(*)</span>:</label>
+              <input value="ARTUR DA COSTA E SILVA">
+            </div>
+
+            <div class="campo">
+              <label>Nível de Ensino <span class="req">(*)</span>:</label>
+              <select>
+                <option>ENSINO FUNDAMENTAL</option>
+                <option selected>ENSINO MÉDIO</option>
+                <option>ENSINO SUPERIOR</option>
+                <option>ENSINO PREPARATÓRIO</option>
+                <option>ENSINO TÉCNICO</option>
+                <option>ENSINO PROFISSIONALIZANTE</option>
+              </select>
+            </div>
+
+            <div class="campo">
+              <label>Renda Per Capta <span class="req">(*)</span>:</label>
+              <input value="R$ 1.200,00" readonly>
+            </div>
+
+            <div class="campo">
+              <label>Faixa <span class="req">(*)</span>:</label>
+              <input value="75%" readonly>
+            </div>
+
+            <div class="dado-box">
+              <b>Tipo de Endereço:</b> RESIDENCIAL<br>
+              <b>Rua:</b> PAPA IV<br>
+              <b>Número:</b> 161<br>
+              <b>Complemento:</b><br>
+              <b>Bairro:</b> SARANDI<br>
+              <b>Cidade:</b> PORTO ALEGRE<br>
+              <b>Estado:</b> RS<br>
+              <b>CEP:</b> 945.045-010
+            </div>
+            <button class="link-acao" onclick="modalForaEscopo('Alterar Endereço')">Alterar Endereço</button>
+
+            <div class="upload">
+              <div class="rotulo">Documento de identificação e CPF: <span class="req">*</span></div>
+              <div class="dica-doc"></div>
+              <div class="upload-row">
+                <div class="upload-box" id="doc1"><span>Selecionar</span><span class="lixeira"
+                    onclick="removerDoc(event,'doc1')">🗑</span></div>
+                <button class="btn-quadrado" onclick="anexarDoc('doc1')" aria-label="Câmera">📷</button>
+                <button class="btn-quadrado" onclick="anexarDoc('doc1')" aria-label="Arquivos">📁</button>
+              </div>
+            </div>
+
+            <div class="upload">
+              <div class="rotulo">Comprovante de residência: <span class="req">*</span></div>
+              <div class="dica-doc">Emitido há no máximo 90 dias</div>
+              <div class="upload-row">
+                <div class="upload-box" id="doc2"><span>Selecionar</span><span class="lixeira"
+                    onclick="removerDoc(event,'doc2')">🗑</span></div>
+                <button class="btn-quadrado" onclick="anexarDoc('doc2')" aria-label="Câmera">📷</button>
+                <button class="btn-quadrado" onclick="anexarDoc('doc2')" aria-label="Arquivos">📁</button>
+              </div>
+            </div>
+
+            <div class="upload">
+              <div class="rotulo">Documento da instituição de ensino: <span class="req">*</span></div>
+              <div class="dica-doc">Autenticado pela instituição, com período letivo atual</div>
+              <div class="upload-row">
+                <div class="upload-box" id="doc3"><span>Selecionar</span><span class="lixeira"
+                    onclick="removerDoc(event,'doc3')">🗑</span></div>
+                <button class="btn-quadrado" onclick="anexarDoc('doc3')" aria-label="Câmera">📷</button>
+                <button class="btn-quadrado" onclick="anexarDoc('doc3')" aria-label="Arquivos">📁</button>
+              </div>
+            </div>
+
+            <div class="upload">
+              <div class="rotulo">Comprovante de renda: <span class="req">*</span></div>
+              <div class="dica-doc">Emitido há no máximo 90 dias</div>
+              <div class="upload-row">
+                <div class="upload-box" id="doc4"><span>Selecionar</span><span class="lixeira"
+                    onclick="removerDoc(event,'doc4')">🗑</span></div>
+                <button class="btn-quadrado" onclick="anexarDoc('doc4')" aria-label="Câmera">📷</button>
+                <button class="btn-quadrado" onclick="anexarDoc('doc4')" aria-label="Arquivos">📁</button>
+              </div>
+            </div>
+
+            <div class="upload">
+              <div class="rotulo">Certidão do Cadúnico ou folha resumo: <span class="req">*</span></div>
+              <div class="dica-doc"></div>
+              <div class="upload-row">
+                <div class="upload-box" id="doc5"><span>Selecionar</span><span class="lixeira"
+                    onclick="removerDoc(event,'doc5')">🗑</span></div>
+                <button class="btn-quadrado" onclick="anexarDoc('doc5')" aria-label="Câmera">📷</button>
+                <button class="btn-quadrado" onclick="anexarDoc('doc5')" aria-label="Arquivos">📁</button>
+              </div>
+            </div>
+
+            <div class="btn-row">
+              <button class="btn texto" onclick="voltar()">Voltar</button>
+              <button class="btn primario" onclick="navegar('entrega')">Continuar</button>
+            </div>
+          </div>
+
+          <!-- ═══════════ ESCOLAR: INCLUIR MEMBRO FAMILIAR (tela da Ghabryella) ═══════════ -->
+          <div class="view fluxo" id="view-membro">
+            <h2 class="titulo-pagina">Incluir Membro Familiar</h2>
+
+            <div class="campo">
+              <label>Grau de parentesco <span class="req">(*)</span>:</label>
+              <select>
+                <option>Pai/Mãe</option>
+                <option>Irmão/Irmã</option>
+                <option>Avô/Avó</option>
+                <option>Filho/Filha</option>
+                <option>Outro</option>
+              </select>
+            </div>
+
+            <div class="campo">
+              <label>Nome completo <span class="req">(*)</span>:</label>
+              <input placeholder="Nome Completo">
+            </div>
+
+            <div class="campo">
+              <label>Idade <span class="req">(*)</span>:</label>
+              <input type="number" min="0" max="100" value="30">
+            </div>
+
+            <div class="campo">
+              <label>Renda <span class="req">(*)</span>:</label>
+              <input value="R$ 1.200,00">
+            </div>
+
+            <div class="upload">
+              <div class="rotulo">Comprovante de renda: <span class="req">*</span></div>
+              <div class="dica-doc">Emitido há no máximo 90 dias</div>
+              <div class="upload-row">
+                <div class="upload-box" id="rendaMembro"><span>Selecionar</span><span class="lixeira"
+                    onclick="removerDoc(event,'rendaMembro')">🗑</span></div>
+                <button class="btn-quadrado" onclick="anexarDoc('rendaMembro')" aria-label="Câmera">📷</button>
+                <button class="btn-quadrado" onclick="anexarDoc('rendaMembro')" aria-label="Arquivos">📁</button>
+              </div>
+            </div>
+
+            <div class="btn-row">
+              <button class="btn texto" onclick="voltar()">Voltar</button>
+              <button class="btn primario" onclick="navegar('grupoFamiliar')">CONTINUAR</button>
+            </div>
+          </div>
+
+          <!-- ═══════════ ESCOLAR: GERENCIAR GRUPO FAMILIAR (tela da Ghabryella) ═══════════ -->
+          <div class="view fluxo" id="view-grupoFamiliar">
+            <h2 class="titulo-pagina">Gerenciar Grupo Familiar</h2>
+
+            <!-- membros ilustrativos -->
+            <div class="dado-box" style="margin-top:10px">
+              <b>Grau de parentesco:</b> Mãe/Pai<br>
+              <b>Nome completo:</b> MARIA DA SILVA<br>
+              <b>Idade:</b> 45 anos<br>
+              <b>Renda:</b> R$ 1.200,00
+            </div>
+
+            <div class="dado-box">
+              <b>Grau de parentesco:</b> Irmão/Irmã<br>
+              <b>Nome completo:</b> JOÃO DA SILVA<br>
+              <b>Idade:</b> 18 anos<br>
+              <b>Renda:</b> R$ 800,00
+            </div>
+
+            <button class="btn primario" onclick="abrirAdicionarMembro()">INCLUIR MEMBRO FAMILIAR</button>
+
+            <div style="display:flex;justify-content:center;margin-top:20px">
+              <button class="btn texto" onclick="navegar('cadastro')">Voltar</button>
+            </div>
+          </div>
+
+          <!-- ═══════════ ESCOLAR: LOCAL DE ENTREGA — ETAPA 3 DE 5 (tela 5) ═══════════ -->
+          <div class="view fluxo" id="view-entrega">
+            <h2 class="titulo-pagina">Selecione o local de entrega</h2>
+            <div class="etapa-label">Etapa 3 de 5</div>
+            <div class="stepper">
+              <span class="step done"></span><span class="step done"></span><span class="step active"></span>
+              <span class="step"></span><span class="step"></span>
+            </div>
+
+            <button class="local-opcao"
+              onclick="escolherLocal('POSTO TRIÂNGULO','AV. ASSIS BRASIL, 4320 - SARANDI, PORTO ALEGRE')">
+              <strong>Posto Triângulo</strong>
+              <small>Av. Assis Brasil, 4320 - Sarandi, Porto Alegre</small>
+            </button>
+
+            <button class="local-opcao"
+              onclick="escolherLocal('SMDS','AV. JOÃO PESSOA, 1105 - FARROUPILHA, PORTO ALEGRE')">
+              <strong>SMDS</strong>
+              <small>Av. João Pessoa, 1105 - Farroupilha, Porto Alegre</small>
+            </button>
+
+            <button class="local-opcao" onclick="escolherEntregaEmCasa()">
+              <strong>Receber em casa</strong>
+            </button>
+
+            <div class="prazo-entrega">
+              <b>Prazo de entrega:</b>
+              <span>A partir de 3 dias úteis.</span>
+            </div>
+          </div>
+
+          <!-- ═══════════ ESCOLAR: REVISÃO — ETAPA 4 DE 5 (tela 6) ═══════════ -->
+          <div class="view fluxo" id="view-revisao">
+            <h2 class="titulo-pagina">Revise seus dados</h2>
+            <div class="etapa-label">Etapa 4 de 5</div>
+            <div class="stepper">
+              <span class="step done"></span><span class="step done"></span><span class="step done"></span>
+              <span class="step active"></span><span class="step"></span>
+            </div>
+
+            <div class="dado-box">
+              <b>CPF:</b> 012.345.789-00<br>
+              <b>Nome:</b> GIOVANA DIAS<br>
+              <b>Data Nascimento:</b> 01/01/2008<br>
+              <b>Nome da Mãe:</b> JOANA DIAS<br><br>
+              <b>Telefone:</b> (51) 900000000<br>
+              <b>E-mail:</b> GIOVANA@EMAIL.COM<br><br>
+              <b>Escola:</b> ARTUR DA COSTA E SILVA<br>
+              <b>Nível de Ensino:</b> ENSINO MÉDIO<br>
+              <b>Renda Per Capita:</b> R$ 1.200,00<br>
+              <b>Faixa:</b> 75%<br><br>
+              <b>Tipo de Endereço:</b> RESIDENCIAL<br>
+              <b>Rua:</b> PAPA IV<br>
+              <b>Número:</b> 161<br>
+              <b>Bairro:</b> SARANDI<br>
+              <b>Cidade:</b> PORTO ALEGRE<br>
+              <b>Estado:</b> RS<br>
+              <b>CEP:</b> 945.045-010
+            </div>
+
+            <div class="rotulo-central" id="rotuloLocalSelecionado">Local de retirada selecionado</div>
+            <div class="local-card">
+              <strong id="localNome">POSTO TRIÂNGULO</strong>
+              <span id="localEndereco">AV. ASSIS BRASIL, 4320 - SARANDI, PORTO ALEGRE</span>
+            </div>
+
+            <div class="btn-row">
+              <button class="btn texto" onclick="voltar()">Voltar</button>
+              <button class="btn primario" onclick="navegar('sucesso')">Continuar</button>
+            </div>
+          </div>
+
+          <!-- ═══════════ ESCOLAR: SUCESSO — ETAPA 5 DE 5 (tela 7) ═══════════ -->
+          <div class="view fluxo" id="view-sucesso">
+            <h2 class="titulo-pagina">Solicitação realizada com sucesso</h2>
+            <div class="etapa-label">Etapa 5 de 5</div>
+            <div class="stepper">
+              <span class="step done"></span><span class="step done"></span><span class="step done"></span>
+              <span class="step done"></span><span class="step active"></span>
+            </div>
+
+            <div class="fib-intro">O número de sua Ficha de Inscrição de Beneficiário (FIB) é:</div>
+            <div class="fib">2568402</div>
+
+            <p class="texto-corrido">Olá! Sua solicitação do Cartão TRI - Escolar foi realizada com
+              sucesso. Agora, ela passará por avaliação da EPTC. Acompanhe o status de sua solicitação
+              acessando o menu <b>Benefícios</b>, na tela inicial, e então <b>Acompanhar Solicitação</b>.
+              O prazo de retirada no local selecionado é de 2 dias úteis <b>após avaliação e
+                aprovação</b> pela EPTC.</p>
+
+            <button class="btn azul" onclick="concluirSolicitacao()">Continuar</button>
+          </div>
+
+          <!-- ═══════════ ESCOLAR: SITUAÇÃO DO BENEFÍCIO (acompanhamento) ═══════════ -->
+          <div class="view fluxo" id="view-situacao">
+            <h2 class="titulo-pagina">Situação do benefício escolar:</h2>
+
+            <div class="chips-demo demo-control" aria-label="Alternar estado (somente demonstração)">
+              <button class="chip ativo" id="chipAnalise" onclick="verSituacao('analise')">Em análise</button>
+              <button class="chip" id="chipRetirada" onclick="verSituacao('aprovadoRetirada')">Aprovado —
+                retirada</button>
+              <button class="chip" id="chipEntrega" onclick="verSituacao('aprovadoEntrega')">Aprovado — entrega</button>
+            </div>
+
+            <!-- estado: em análise -->
+            <div id="sitAnalise">
+              <span class="badge-situacao badge-analise">EM ANÁLISE</span>
+              <div class="linha-central">Última atualização em: 10/06/2026</div>
+              <div class="dado-central">FIB: 2568402</div>
+              <button class="btn azul" onclick="reiniciarPrototipo()">Concluir</button>
+            </div>
+
+            <!-- estado: aprovado (retirada) -->
+            <div id="sitAprovadoRetirada" class="oculto">
+              <span class="badge-situacao badge-aprovado">APROVADO</span>
+              <div class="linha-central">Última atualização em: 10/06/2026</div>
+              <div class="dado-central">FIB: 2568580</div>
+              <div class="dado-central">Benefício válido até: 12/07/2026</div>
+              <div class="dado-central" style="margin-bottom:14px">Isenção: 50%</div>
+
+              <div class="aviso atencao">
+                <b>Seu benefício escolar está APROVADO.</b><br>
+                Para utilizar o TRI Escolar, você precisa ter um cartão ativo.
+                Clique no botão abaixo para solicitar a 2ª via do cartão.
+              </div>
+
+              <button class="btn azul" onclick="modalForaEscopo('Solicitar 2ª via do cartão')">Solicitar 2ª via do
+                cartão</button>
+              <button class="btn azul" onclick="reiniciarPrototipo()">Concluir</button>
+            </div>
+
+            <!-- estado: aprovado (entrega em casa) -->
+            <div id="sitAprovadoEntrega" class="oculto">
+              <span class="badge-situacao badge-aprovado">APROVADO</span>
+              <div class="linha-central">Última atualização em: 10/06/2026</div>
+              <div class="dado-central">FIB: 2568580</div>
+              <div class="dado-central">Benefício válido até: 12/07/2026</div>
+              <div class="dado-central" style="margin-bottom:14px">Isenção: 50%</div>
+
+              <div class="aviso atencao">
+                Para receber o cartão em casa, é necessário realizar o <b>pagamento da taxa de
+                  entrega</b>. Clique no botão abaixo para realizar o pagamento.
+              </div>
+
+              <button class="btn azul" onclick="modalForaEscopo('Realizar pagamento')">Realizar pagamento</button>
+              <button class="btn azul" onclick="reiniciarPrototipo()">Concluir</button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Botão flutuante (proteger QR Code) — só na tela QR Codes -->
+        <button class="btn-lock" id="btnLock" onclick="alternarLock()" aria-label="Proteger QR Code">
+          <svg id="lockIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="11" width="14" height="10" rx="2" />
+            <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+          </svg>
+        </button>
+
+        <!-- NavBar (somente na Home) -->
+        <div class="navbar" id="navbar">
+          <div class="nav-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M3 10.5 12 3l9 7.5" />
+              <path d="M5 9.5V21h14V9.5" />
+            </svg>
+            Início
+          </div>
+          <div class="nav-item" style="cursor:pointer" onclick="abrirQrCodes()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+              <rect x="3" y="3" width="7" height="7" rx="1" />
+              <rect x="14" y="3" width="7" height="7" rx="1" />
+              <rect x="3" y="14" width="7" height="7" rx="1" />
+              <path d="M14 14h3v3h-3zM18 18h3v3h-3z" />
+            </svg>
+            QR Code
+          </div>
+          <div class="nav-item" style="cursor:pointer" onclick="abrirNotificacoes()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+            </svg>
+            Avisos
+          </div>
+          <div class="nav-item" style="cursor:pointer" onclick="abrirPerfil()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+              stroke-linejoin="round">
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5" />
+            </svg>
+            Perfil
+          </div>
+        </div>
+
+        <!-- Menu lateral (réplica do app atual — à direita) -->
+        <div class="menu-fundo" id="menuFundo" onclick="fecharMenuFundo(event)">
+          <nav class="menu-lateral" aria-label="Menu">
+
+            <button class="menu-item" onclick="itemMenu('inicio')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M3 10.5 12 3l9 7.5" />
+                <path d="M5 9.5V21h14V9.5" />
+              </svg>
+              Início
+            </button>
+
+            <button class="menu-item" onclick="itemMenu('Compra de Créditos e QRCodes')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M12 5v14" />
+                <path
+                  d="M16 8c-.8-1.2-2.2-1.8-4-1.8-2 0-3.5 1-3.5 2.5 0 3.6 7.5 1.7 7.5 5.3 0 1.6-1.5 2.5-3.7 2.5-1.8 0-3.3-.7-4-2" />
+              </svg>
+              Compra de Créditos e QRCodes
+            </button>
+
+            <button class="menu-item" onclick="itemMenu('Últimos Usos')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                stroke-linejoin="round">
+                <rect x="4" y="3" width="16" height="13" rx="2" />
+                <path d="M4 9h16" />
+                <path d="M7 19.5v0M17 19.5v0" />
+                <circle cx="7.5" cy="19" r="1.2" />
+                <circle cx="16.5" cy="19" r="1.2" />
+              </svg>
+              Últimos Usos
+            </button>
+
+            <button class="menu-item" onclick="itemMenu('Saldo')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                stroke-linejoin="round">
+                <rect x="4" y="4" width="16" height="16" rx="2" />
+                <path d="M12 8v8" />
+                <path
+                  d="M14.5 9.5c-.5-.8-1.4-1.2-2.5-1.2-1.3 0-2.3.7-2.3 1.7 0 2.4 5 1.1 5 3.5 0 1-1 1.7-2.5 1.7-1.2 0-2.2-.5-2.7-1.3" />
+              </svg>
+              Saldo
+            </button>
+
+            <button class="menu-item" onclick="itemMenu('Atualização de Contato')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                stroke-linejoin="round">
+                <rect x="6" y="4" width="12" height="17" rx="2" />
+                <rect x="9" y="2" width="6" height="4" rx="1" />
+              </svg>
+              Atualização de Contato
+            </button>
+
+            <button class="menu-item" onclick="itemMenu('Cancelar Cartão')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M9 9l6 6M15 9l-6 6" />
+              </svg>
+              Cancelar Cartão
+            </button>
+
+            <button class="menu-item" onclick="itemMenu('Consultar Pedidos')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M4 9h16l-1.5 10a2 2 0 0 1-2 1.7h-9A2 2 0 0 1 5.5 19L4 9z" />
+                <path d="M8 9l2.5-5M16 9l-2.5-5" />
+                <path d="M9.5 13v4M12 13v4M14.5 13v4" />
+              </svg>
+              Consultar Pedidos
+            </button>
+
+            <button class="menu-item" onclick="itemMenu('escolar')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M12 4 2 9l10 5 10-5-10-5z" />
+                <path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5" />
+              </svg>
+              Escolar
+            </button>
+
+            <button class="menu-item" onclick="itemMenu('Biometria')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M5.6 9.5A7 7 0 0 1 12 5c2.8 0 5.2 1.6 6.4 4" />
+                <path d="M8.5 12a3.5 3.5 0 0 1 7 0c0 2.5.6 4.5 1.5 6" />
+                <path d="M12 12v3a7 7 0 0 0 1 3.5" />
+              </svg>
+              Biometria
+            </button>
+
+            <button class="menu-item" onclick="itemMenu('Ajuda')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M9.5 9.5a2.5 2.5 0 1 1 3.4 2.3c-.7.3-.9.7-.9 1.7" />
+                <path d="M12 17h.01" />
+              </svg>
+              Ajuda
+            </button>
+
+            <button class="menu-item" onclick="itemMenu('Sobre')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 11v5" />
+                <path d="M12 8h.01" />
+              </svg>
+              Sobre
+            </button>
+
+            <button class="menu-item sair" onclick="sair()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3" />
+                <path d="M10 17l-5-5 5-5" />
+                <path d="M5 12h11" />
+              </svg>
+              Sair
+            </button>
+
+          </nav>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal-fundo" id="modalFundo" role="dialog" aria-modal="true">
+          <div class="modal">
+            <h3 id="modalTitulo">Título</h3>
+            <p id="modalTexto">Mensagem</p>
+            <div class="btn-row">
+              <button class="btn secundario oculto" id="modalBotaoSec">Não</button>
+              <button class="btn primario" id="modalBotao" onclick="fecharModal()">Entendi</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ════════════════ ANOTAÇÕES (painel Escopo) ════════════════ -->
+    <div class="notes">
+      <label class="demo-control"
+        style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-secondary);margin-bottom:6px;cursor:pointer">
+        <input type="checkbox" id="togglePossuiCartao"> Simular: usuário já possui cartão
+      </label>
+
+      <h2>Módulos — regras</h2>
+
+      <div class="note" style="border-left-color:#475569">
+        <span class="mod-cor" style="background:#475569"></span><b>Login</b>
+        <div class="mod-regra">Acesso ao aplicativo através da autenticação do usuário.</div>
+      </div>
+
+      <div class="note" style="border-left-color:#273285">
+        <span class="mod-cor" style="background:#273285"></span><b>Home</b>
+        <div class="mod-regra">Tela principal com atalhos para os módulos e benefícios disponíveis.</div>
+      </div>
+
+      <div class="note" style="border-left-color:#F5802C">
+        <span class="mod-cor" style="background:#F5802C"></span><b>Solicitar Cartão</b>
+        <div class="mod-regra">Banner "Solicite seu cartão" → se já possui cartão, vai ao menu Cartões; senão, tela
+          Solicitar Cartão.</div>
+      </div>
+
+      <div class="note" style="border-left-color:#FAA831">
+        <span class="mod-cor" style="background:#FAA831"></span><b>Recarga</b>
+        <div class="mod-regra">Consulta e realização de recargas do cartão.</div>
+      </div>
+
+      <div class="note" style="border-left-color:#CB58A0">
+        <span class="mod-cor" style="background:#CB58A0"></span><b>QR Code</b>
+        <div class="mod-regra">Geração e visualização do código para utilização do benefício.</div>
+      </div>
+
+      <div class="note" style="border-left-color:#0563E8">
+        <span class="mod-cor" style="background:#0563E8"></span><b>Pedidos</b>
+        <div class="mod-regra">Consulta das solicitações e pedidos realizados.</div>
+      </div>
+
+      <div class="note" style="border-left-color:#00AFEF">
+        <span class="mod-cor" style="background:#00AFEF"></span><b>Cartões</b>
+        <div class="mod-regra">Visualização e gerenciamento dos cartões vinculados ao usuário.</div>
+      </div>
+
+      <div class="note" style="border-left-color:#3FB54A">
+        <span class="mod-cor" style="background:#3FB54A"></span><b>Extrato</b>
+        <div class="mod-regra">Consulta de movimentações, créditos e utilização dos benefícios.</div>
+      </div>
+
+      <div class="note" style="border-left-color:#7C3AED">
+        <span class="mod-cor" style="background:#7C3AED"></span><b>Benefício Escolar</b>
+        <div class="mod-regra">Solicitação, acompanhamento e gerenciamento do benefício escolar.</div>
+      </div>
+
+      <div class="note" style="border-left-color:#0045A6">
+        <span class="mod-cor" style="background:#0045A6"></span><b>Benefício TRI Idoso</b>
+        <div class="mod-regra">Perfil → validação do documento (RG/CNH) → biometria facial com liveness → envio da
+          solicitação. <i>Demais regras a descrever.</i></div>
+      </div>
+
+      <div class="note" style="border-left-color:#189A9A">
+        <span class="mod-cor" style="background:#189A9A"></span><b>Menu lateral</b>
+        <div class="mod-regra">Acesso aos módulos e funcionalidades adicionais do aplicativo.</div>
+      </div>
+
+      <div class="note" style="border-left-color:#5B5BD6">
+        <span class="mod-cor" style="background:#5B5BD6"></span><b>Notificações</b>
+        <div class="mod-regra">Visualização de avisos e comunicados importantes.</div>
+      </div>
+
+      <div class="note" style="border-left-color:#64748B">
+        <span class="mod-cor" style="background:#64748B"></span><b>Perfil</b>
+        <div class="mod-regra">Visualização e atualização dos dados do usuário.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── JS (MVC): núcleo → modelo → controladores → fachada ── -->
+  <script src="js/nucleo/roteador.js"></script>
+  <script src="js/nucleo/modal.js"></script>
+  <script src="js/nucleo/formato.js"></script>
+  <script src="js/modelos/dados.js"></script>
+  <script src="js/controladores/login.js"></script>
+  <script src="js/controladores/home.js"></script>
+  <script src="js/controladores/recarga.js"></script>
+  <script src="js/controladores/qrcodes.js"></script>
+  <script src="js/controladores/pedidos.js"></script>
+  <script src="js/controladores/cartoes.js"></script>
+  <script src="js/controladores/entrega-cartoes.js"></script>
+  <script src="js/controladores/beneficios.js"></script>
+  <script src="js/app.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,273 @@
+/* ══════════════════════════════════════════════════════════════════════
+   CAMADA 3 — COMPONENTES
+   Peças reutilizadas por dois ou mais módulos (botões, avisos, stepper,
+   campos, títulos, pagamento/PIX, numpad etc.). Estilo de tela específica
+   fica na camada 4.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* botões */
+.btn{width:100%;border:none;border-radius:var(--radius-card);padding:14px;cursor:pointer;
+  font-family:'Inter',sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.3px;margin-top:6px;transition:transform .12s ease,opacity .12s ease}
+.btn:active{transform:scale(.985)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.primario{background:var(--primary);color:#fff}
+.btn.azul{background:var(--primary-light);color:#fff}
+.btn.texto{background:transparent;color:var(--primary-light);text-transform:uppercase;font-size:12px;padding:14px 10px}
+.btn.secundario{background:var(--bg-card);border:1px solid var(--primary-light);color:var(--primary-light)}
+.btn-row{display:flex;gap:10px;align-items:center;margin-top:10px}
+.btn-row .btn{margin-top:0}
+.btn-row .texto{width:auto;flex:0 0 auto}
+.btn-row .primario,.btn-row .azul{flex:1}
+.btn-contorno{width:100%;border:1px solid var(--primary-light);border-radius:var(--radius-card);
+  background:var(--bg-card);color:var(--primary-light);padding:14px;cursor:pointer;
+  font-family:'Inter',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.oculto{display:none !important}
+
+/* Container com botão no final */
+.tela-com-botao {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.tela-com-botao .btn {
+  margin-top: auto;
+}
+
+/* CTAs dos banners (Home / Login) */
+.cta{display:inline-flex;align-items:center;gap:7px;border:none;cursor:pointer;
+  font-family:'Inter',sans-serif;font-size:11.5px;color:#fff;
+  border-radius:24px;padding:8px 14px;margin-top:12px}
+.cta .arr{display:inline-flex;width:15px;height:15px;border-radius:50%;background:rgba(255,255,255,.28);
+  align-items:center;justify-content:center;font-size:9px}
+.cta-amber{background:var(--amber)}
+.cta-glass{background:rgba(0,0,0,.15);border:1px solid rgba(255,255,255,.4)}
+
+/* títulos e textos de fluxo */
+.titulo-pagina{font-size:19px;font-weight:700;line-height:1.25;color:var(--primary);margin: 8px 0 2px;}
+.etapa-label{font-size:11.5px;color:var(--text-secondary);margin-bottom:10px}
+.subtitulo{font-size:13px;line-height:1.4;color:var(--text-primary);margin:0 0 10px}
+.info-dicas-bullet{font-size: 11.5px; color:var(--text-secondary); margin-bottom: 8px}
+.titulo-grande{font-size:21px;font-weight:700;line-height:1.3;color:var(--text-primary);margin:14px 0 22px}
+.titulo-secao{font-size:13px;font-weight:700;color:var(--text-primary);margin:8px 0 4px}
+.titulo-info{font-size:19px;font-weight:700;line-height:1.3;color:var(--text-primary);margin:4px 0 12px}
+.texto-corrido{font-size:12px;line-height:1.6;color:var(--text-primary);text-align:justify;margin-bottom:16px}
+.texto-corrido b{font-weight:700}
+.etiqueta{display:inline-block;padding:4px 9px;border-radius:999px;background:var(--surface-light);
+  color:var(--primary-light);font-size:9px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.4px;margin:8px 0 2px}
+
+/* stepper de etapas */
+.stepper{display:flex;gap:6px;margin:4px 0 16px}
+.step{height:6px;border-radius:999px;flex:1;background:var(--border)}
+.step.done{background:var(--primary)}
+.step.active{background:var(--primary-light)}
+
+/* avisos */
+.aviso{border-radius:var(--radius-tip);padding:12px 14px;font-size:11.5px;line-height:1.45;
+  margin-bottom:14px;background:var(--surface-light);color:var(--text-primary)}
+.aviso b{color:var(--primary)}
+.aviso.atencao{background:#FEF3E2;color:#7A4A0E;border-left:4px solid var(--amber)}
+.aviso.atencao b{color:#7A4A0E}
+.aviso.sucesso{background:#EFFBE2;color:#33610A}
+
+/* listas informativas e links de site */
+.lista-info{padding-left:16px;margin-bottom:14px}
+.lista-info li{font-size:11.5px;line-height:1.5;color:var(--text-primary);margin-bottom:8px}
+.lista-info b{color:var(--primary)}
+.sites{font-size:11.5px;line-height:1.8;margin-bottom:14px;word-break:break-word}
+.sites a{color:var(--primary-light);font-weight:700;text-decoration:none}
+
+/* formulário genérico */
+.campo{margin-bottom:12px}
+.campo label{display:block;font-size:11px;font-weight:700;color:var(--text-primary);margin-bottom:6px}
+.campo label .req{color:var(--pink)}
+.campo input,.campo select{width:100%;border:1px solid var(--border);border-radius:12px;padding:11px 12px;
+  font-size:13px;font-family:'Inter',sans-serif;background:var(--bg-card);color:var(--text-primary)}
+.campo input[readonly]{background:#ECEEF3;border-color:#ECEEF3;color:var(--text-secondary)}
+.radio-grupo{display:flex;flex-direction:column;gap:9px;padding:2px 0 4px}
+.radio-grupo.linha{flex-direction:row;gap:22px}
+.radio-grupo label{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:400;color:var(--text-primary)}
+.radio-grupo input{accent-color:var(--primary-light);width:18px;height:18px}
+.dado-box{background:#ECEEF3;border-radius:12px;padding:13px 14px;font-size:12px;line-height:1.8;
+  color:var(--text-primary);margin-bottom:6px}
+.dado-box b{font-weight:700}
+.link-acao{background:none;border:none;color:var(--primary-light);font-weight:700;font-size:12px;
+  cursor:pointer;padding:6px 0 12px;font-family:'Inter',sans-serif;display:block;text-align:left}
+
+/* sucesso genérico */
+.icone-sucesso {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: #EFFBE2;
+  color: #4CA500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  font-weight: 700;
+  margin: 25px 128px 25px;
+  text-align: center;
+}
+
+/* falha biometria */
+.icone-falha {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: #FEE2E2;
+  color: #EF4444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  font-weight: 700;
+  margin: 25px 128px 25px;
+  text-align: center;
+}
+
+/* seleção de local / endereço (Escolar e 2ª via) */
+.local-opcao{width:100%;background:var(--primary-light);color:#fff;border:none;border-radius:12px;
+  padding:13px 14px;margin-bottom:10px;cursor:pointer;font-family:'Inter',sans-serif;text-align:center;
+  transition:transform .12s ease}
+.local-opcao:active{transform:scale(.985)}
+.local-opcao strong{display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.local-opcao small{display:block;font-size:10px;margin-top:3px;opacity:.95;text-transform:uppercase}
+.prazo-entrega{text-align:center;margin-top:18px}
+.prazo-entrega b{display:block;font-size:16px;font-weight:700;color:var(--text-primary);margin-bottom:6px}
+.prazo-entrega span{font-size:12px;color:var(--text-secondary)}
+.rotulo-central{text-align:center;font-size:13px;font-weight:700;color:var(--text-primary);margin:14px 0 8px}
+.local-card{width:100%;background:var(--primary-light);color:#fff;border:none;border-radius:12px;
+  padding:13px 14px;text-align:center;font-family:'Inter',sans-serif}
+.local-card strong{display:block;font-size:11px;font-weight:700;text-transform:uppercase}
+.local-card span{display:block;font-size:11px;margin-top:4px;text-transform:uppercase;line-height:1.4}
+
+/* chips de demonstração (estados) */
+.chips-demo{display:flex;gap:6px;margin:4px 0 12px;flex-wrap:wrap}
+.chip{font-size:10px;padding:5px 10px;border-radius:999px;border:1px solid var(--border);
+  background:#fff;color:var(--text-secondary);cursor:pointer;font-family:'Inter',sans-serif;font-weight:700}
+.chip.ativo{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+/* caixa do produto (Recarga / QR) */
+.info-produto{background:var(--surface-light);border-radius:12px;padding:14px;
+  text-align:center;margin-bottom:18px}
+.info-produto .prod{font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:7px}
+.info-produto .linha{font-size:12.5px;color:var(--text-primary);margin-bottom:5px}
+.info-produto .mini{font-size:11px;color:var(--text-secondary);margin-bottom:2px}
+
+/* formas de pagamento (PIX, Cartão de Crédito, Boleto) */
+.metodo-pgto{display:flex;align-items:center;gap:12px;background:var(--bg-card);
+  border:1px solid var(--border);border-radius:14px;padding:13px 14px;margin-bottom:11px;
+  box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.metodo-logo{width:46px;height:46px;border-radius:12px;background:var(--surface-light);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.metodo-logo svg{width:28px;height:28px}
+.metodo-txt{flex:1;min-width:0}
+.metodo-nome{font-size:13.5px;font-weight:700;color:var(--text-primary);margin-bottom:3px}
+.metodo-valores{font-size:11px;line-height:1.45;color:var(--text-secondary)}
+.metodo-valores b{color:var(--text-primary)}
+.metodo-pgto .btn{width:auto;margin-top:0;padding:11px 18px;flex-shrink:0;font-size:12px}
+
+/* pedido PIX (QR, chave, expiração) */
+.pix-logo{display:flex;align-items:center;justify-content:center;gap:10px;margin:18px 0 10px}
+.pix-logo .letras{font-size:30px;color:#8A9099;letter-spacing:1px}
+.pix-logo .letras small{display:block;font-size:7.5px;letter-spacing:.4px;text-align:right;margin-top:-3px}
+.valor-central{text-align:center;font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:4px}
+.nota-uso{text-align:center;font-size:12px;line-height:1.5;color:var(--text-secondary);margin-top:16px}
+.btn-pagar{display:block;width:200px;margin:18px auto 0}
+.qr-fake {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 10px auto;
+  width: 200px;
+  height: 200px;
+  background: #FFFFFF;
+  border-radius: 12px;
+  border: 2px solid #E8E8E8;
+}.pill-expira{display:flex;align-items:center;gap:8px;justify-content:center;background:#FEF3E2;
+  border:1.5px solid var(--orange);border-radius:14px;padding:11px;font-size:12.5px;
+  font-weight:700;color:var(--text-primary);margin-bottom:12px}
+.chave-box{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#ECEEF3;
+  border:1px solid var(--text-light);border-radius:12px;padding:11px 12px;font-size:12px;
+  color:var(--text-primary);margin:10px 0 16px;overflow:hidden;white-space:nowrap}
+.chave-box span{overflow:hidden;text-overflow:ellipsis}
+.opcoes-pix{font-size:12px;line-height:1.5;color:var(--text-primary)}
+.opcoes-pix .tit{font-weight:700;margin-bottom:8px}
+.opcoes-pix p{display:flex;gap:8px;margin-bottom:8px}
+.divisor-ou{display:flex;align-items:center;gap:12px;color:var(--text-secondary);
+  font-size:12px;font-weight:700;margin:10px 0}
+.divisor-ou::before,.divisor-ou::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* numpad (quantidade) e resumo */
+.num-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:6px 0 12px}
+.num-btn{border:1px solid var(--border);background:var(--bg-card);border-radius:12px;
+  padding:15px 0;font-family:'Inter',sans-serif;font-size:17px;font-weight:700;
+  color:var(--text-primary);cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.num-btn.dez{grid-column:2;background:#ECEEF3;color:var(--text-secondary)}
+.num-btn.sel{background:var(--primary);border-color:var(--primary);color:#fff}
+.resumo-laranja{background:var(--amber);color:#fff;border-radius:12px;padding:12px;
+  text-align:center;font-size:12.5px;line-height:1.5;margin-bottom:12px}
+.resumo-laranja b{font-size:13px}
+
+/* opção ilustrada (Como você irá viajar? / tipo de passagem) */
+.opcao-ilustrada{display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;
+  border:none;background:none;cursor:pointer;font-family:'Inter',sans-serif;margin:26px 0;
+  transition:transform .12s ease}
+.opcao-ilustrada:active{transform:scale(.985)}
+.opcao-ilustrada .legenda-ilustrada{font-size:15px;color:var(--text-primary);text-align:center;line-height:1.35}
+.opcao-ilustrada .ico-qr-grande{width:96px;height:96px;border:5px solid var(--text-primary);
+  border-radius:18px;display:flex;align-items:center;justify-content:center;color:var(--text-primary)}
+.opcao-ilustrada .ico-qr-grande svg{width:58px;height:58px}
+.opcao-ilustrada .bus-art svg{width:180px;height:auto}
+
+/* ── BADGE DE CAPTURA DE FOTO ──────────────────────────────────────────── */
+.badge-captura-foto {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: #4CA500;
+  color: white;
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 14px;
+  width: fit-content;
+  position: absolute;
+  bottom: 400px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  white-space: nowrap;
+}
+
+.badge-captura-foto.visivel {
+  display: inline-flex !important;
+}
+
+.badge-captura-foto svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* Botão fixo no final da tela */
+.botao-fixo {
+  position: absolute;
+  bottom: 30px;
+  left: 0;
+  right: 0;
+  padding: 12px 16px 0 16px;
+  width: 100%;
+  z-index: 10;
+  box-sizing: border-box;
+}
+
+.botao-fixo .btn {
+  width: 100%;
+  margin-top: 0;
+}
